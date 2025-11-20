@@ -45,7 +45,7 @@ Wiki REPO es una companion app para R.E.P.O. desarrollada con Jetpack Compose qu
 ### 1. Clonar el Repositorio
 
 ```bash
-git clone https://github.com/tu-usuario/wiki-repo-amr-smh.git
+git clone https://github.com/Zyroks0906/wiki_repo_amr_smh
 cd wiki-repo-amr-smh
 ```
 
