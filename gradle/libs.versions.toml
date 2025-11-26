@@ -1,6 +1,10 @@
 [versions]
+# Unificamos la versión de Kotlin.
+kotlin = "2.0.0"
+# ¡CORREGIDO! Esta es la versión correcta de KSP compatible con Kotlin 2.2.21
+ksp = "2.0.0-1.0.21"
+
 agp = "8.13.1"
-kotlin = "2.0.21"
 coreKtx = "1.17.0"
 junit = "4.13.2"
 junitVersion = "1.3.0"
@@ -29,4 +33,5 @@ androidx-compose-material3 = { group = "androidx.compose.material3", name = "mat
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
