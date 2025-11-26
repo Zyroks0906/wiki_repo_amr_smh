@@ -1,12 +1,8 @@
-package com.amrsmh.wiki_repo_amr_smh.ui.screens.loot
+package com.amrsmh.wiki_repo_amr_smh.ui.screens.shop
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -14,14 +10,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.amrsmh.wiki_repo_amr_smh.domain.models.LootItem
-import com.amrsmh.wiki_repo_amr_smh.ui.screens.viewmodel.LootViewModel
-import com.amrsmh.wiki_repo_amr_smh.ui.screens.viewmodel.LootViewModelFactory
+import com.amrsmh.wiki_repo_amr_smh.domain.models.ShopItem
+import com.amrsmh.wiki_repo_amr_smh.ui.screens.viewmodel.ShopViewModel
+import com.amrsmh.wiki_repo_amr_smh.ui.screens.viewmodel.ShopViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LootDetailScreen(id: Long, navigateBack: () -> Unit) {
-    val vm: LootViewModel = viewModel(factory = LootViewModelFactory())
+fun ShopDetailScreen(id: Long, navigateBack: () -> Unit) {
+    val vm: ShopViewModel = viewModel(factory = ShopViewModelFactory())
     val itemFlow = remember(id) { vm.observeById(id) }
     val item by itemFlow.collectAsState(initial = null)
     var showEditDialog by remember { mutableStateOf(false) }
@@ -30,19 +26,19 @@ fun LootDetailScreen(id: Long, navigateBack: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(item?.name ?: "Loot Detail") },
+                title = { Text(item?.name ?: "Shop Item") },
                 navigationIcon = {
                     IconButton(onClick = navigateBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                 },
                 actions = {
-                    item?.let { loot ->
-                        IconButton(onClick = { vm.toggleFavorite(loot) }) {
+                    item?.let { shopItem ->
+                        IconButton(onClick = { vm.toggleFavorite(shopItem) }) {
                             Icon(
-                                if (loot.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                                contentDescription = "Favorite",
-                                tint = if (loot.isFavorite) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurface
+                                if (shopItem.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                contentDescription = "Wishlist",
+                                tint = if (shopItem.isFavorite) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }
@@ -70,7 +66,7 @@ fun LootDetailScreen(id: Long, navigateBack: () -> Unit) {
             }
         }
     ) { padding ->
-        item?.let { loot ->
+        item?.let { shopItem ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -78,20 +74,14 @@ fun LootDetailScreen(id: Long, navigateBack: () -> Unit) {
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                DetailCard("Category", loot.category)
-                DetailCard("Rarity", loot.rarity)
-                DetailCard("Value", "${loot.value} SURPLUS")
-                DetailCard("Weight", "${loot.weight} kg")
-                DetailCard("Transport Difficulty", "${loot.transportDifficulty}/5")
-                DetailCard("State", loot.state)
-                if (!loot.notes.isNullOrBlank()) {
-                    DetailCard("Notes", loot.notes)
-                }
+                ShopDetailCard("Price", "${shopItem.price} SURPLUS")
+                ShopDetailCard("Category", shopItem.category)
+                ShopDetailCard("Description", shopItem.description)
             }
 
             if (showEditDialog) {
-                EditLootDialog(
-                    item = loot,
+                EditShopItemDialog(
+                    item = shopItem,
                     onConfirm = { updated ->
                         vm.updateItem(updated)
                         showEditDialog = false
@@ -106,7 +96,7 @@ fun LootDetailScreen(id: Long, navigateBack: () -> Unit) {
                     confirmButton = {
                         Button(
                             onClick = {
-                                vm.deleteItem(loot.id)
+                                vm.deleteItem(shopItem.id)
                                 navigateBack()
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
@@ -120,7 +110,7 @@ fun LootDetailScreen(id: Long, navigateBack: () -> Unit) {
                         }
                     },
                     title = { Text("Delete Item?") },
-                    text = { Text("Are you sure you want to delete '${loot.name}'? This action cannot be undone.") }
+                    text = { Text("Are you sure you want to delete '${shopItem.name}'?") }
                 )
             }
         } ?: Box(
@@ -135,7 +125,7 @@ fun LootDetailScreen(id: Long, navigateBack: () -> Unit) {
 }
 
 @Composable
-private fun DetailCard(label: String, value: String) {
+private fun ShopDetailCard(label: String, value: String) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
@@ -158,13 +148,11 @@ private fun DetailCard(label: String, value: String) {
 }
 
 @Composable
-fun EditLootDialog(item: LootItem, onConfirm: (LootItem) -> Unit, onDismiss: () -> Unit) {
+fun EditShopItemDialog(item: ShopItem, onConfirm: (ShopItem) -> Unit, onDismiss: () -> Unit) {
     var name by remember { mutableStateOf(item.name) }
+    var price by remember { mutableStateOf(item.price.toString()) }
+    var description by remember { mutableStateOf(item.description) }
     var category by remember { mutableStateOf(item.category) }
-    var valueStr by remember { mutableStateOf(item.value.toString()) }
-    var weightStr by remember { mutableStateOf(item.weight.toString()) }
-    var difficultyStr by remember { mutableStateOf(item.transportDifficulty.toString()) }
-    var notes by remember { mutableStateOf(item.notes ?: "") }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -173,11 +161,9 @@ fun EditLootDialog(item: LootItem, onConfirm: (LootItem) -> Unit, onDismiss: () 
                 onClick = {
                     val updated = item.copy(
                         name = name.ifBlank { "Unnamed" },
-                        category = category,
-                        value = valueStr.toIntOrNull() ?: 0,
-                        weight = weightStr.toFloatOrNull() ?: 1f,
-                        transportDifficulty = difficultyStr.toIntOrNull()?.coerceIn(1, 5) ?: 1,
-                        notes = notes.ifBlank { null }
+                        price = price.toIntOrNull() ?: 0,
+                        description = description.ifBlank { "No description" },
+                        category = category
                     )
                     onConfirm(updated)
                 },
@@ -189,7 +175,7 @@ fun EditLootDialog(item: LootItem, onConfirm: (LootItem) -> Unit, onDismiss: () 
         dismissButton = {
             TextButton(onClick = onDismiss) { Text("Cancel") }
         },
-        title = { Text("Edit Loot Item", color = MaterialTheme.colorScheme.secondary) },
+        title = { Text("Edit Shop Item", color = MaterialTheme.colorScheme.secondary) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(
@@ -199,35 +185,21 @@ fun EditLootDialog(item: LootItem, onConfirm: (LootItem) -> Unit, onDismiss: () 
                     modifier = Modifier.fillMaxWidth()
                 )
                 OutlinedTextField(
+                    value = price,
+                    onValueChange = { price = it },
+                    label = { Text("Price (SURPLUS)") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
                     value = category,
                     onValueChange = { category = it },
                     label = { Text("Category") },
                     modifier = Modifier.fillMaxWidth()
                 )
                 OutlinedTextField(
-                    value = valueStr,
-                    onValueChange = { valueStr = it },
-                    label = { Text("Value (SURPLUS)") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedTextField(
-                        value = weightStr,
-                        onValueChange = { weightStr = it },
-                        label = { Text("Weight (kg)") },
-                        modifier = Modifier.weight(1f)
-                    )
-                    OutlinedTextField(
-                        value = difficultyStr,
-                        onValueChange = { difficultyStr = it },
-                        label = { Text("Difficulty (1-5)") },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-                OutlinedTextField(
-                    value = notes,
-                    onValueChange = { notes = it },
-                    label = { Text("Notes") },
+                    value = description,
+                    onValueChange = { description = it },
+                    label = { Text("Description") },
                     modifier = Modifier.fillMaxWidth(),
                     maxLines = 3
                 )

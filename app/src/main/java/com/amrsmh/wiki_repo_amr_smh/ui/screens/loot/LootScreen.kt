@@ -5,6 +5,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -17,13 +18,25 @@ import com.amrsmh.wiki_repo_amr_smh.ui.screens.viewmodel.LootViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LootScreen(navigateToDetail: (Long) -> Unit) {
+fun LootScreen(
+    navigateToDetail: (Long) -> Unit,
+    navigateBack: () -> Unit // ✅ NUEVO
+) {
     val vm: LootViewModel = viewModel(factory = LootViewModelFactory())
     val state by vm.uiState.collectAsState()
     val isDialogOpen by vm.isAddDialogOpen.collectAsState()
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Loot Log") }) },
+        topBar = {
+            TopAppBar(
+                title = { Text("Loot Log") },
+                navigationIcon = { // ✅ NUEVO
+                    IconButton(onClick = navigateBack) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                }
+            )
+        },
         floatingActionButton = {
             FloatingActionButton(onClick = { vm.showAddDialog(true) }) {
                 Icon(Icons.Default.Add, contentDescription = "Add")
@@ -31,13 +44,37 @@ fun LootScreen(navigateToDetail: (Long) -> Unit) {
         }
     ) { padding ->
         Box(modifier = Modifier.padding(padding)) {
-            LazyColumn(modifier = Modifier.fillMaxSize()) {
-                items(state.items, key = { it.id }) { item ->
-                    LootCard(
-                        item = item,
-                        onClick = { navigateToDetail(item.id) },
-                        onToggleFavorite = { vm.toggleFavorite(item) }
-                    )
+            if (state.items.isEmpty()) {
+                // Mensaje si no hay items
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = androidx.compose.ui.Alignment.Center
+                ) {
+                    Column(horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
+                        Text(
+                            text = "No loot items yet",
+                            style = MaterialTheme.typography.titleLarge
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            text = "Tap + to add your first item",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(vertical = 8.dp)
+                ) {
+                    items(state.items, key = { it.id }) { item ->
+                        LootCard(
+                            item = item,
+                            onClick = { navigateToDetail(item.id) },
+                            onToggleFavorite = { vm.toggleFavorite(item) }
+                        )
+                    }
                 }
             }
 
@@ -93,19 +130,22 @@ fun AddLootDialog(onConfirm: (LootItem) -> Unit, onDismiss: () -> Unit) {
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Name") }
+                    label = { Text("Name") },
+                    modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(Modifier.height(8.dp))
                 OutlinedTextField(
                     value = category,
                     onValueChange = { category = it },
-                    label = { Text("Category") }
+                    label = { Text("Category") },
+                    modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(Modifier.height(8.dp))
                 OutlinedTextField(
                     value = valueStr,
                     onValueChange = { valueStr = it },
-                    label = { Text("Value (SURPLUS)") }
+                    label = { Text("Value (SURPLUS)") },
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
         }

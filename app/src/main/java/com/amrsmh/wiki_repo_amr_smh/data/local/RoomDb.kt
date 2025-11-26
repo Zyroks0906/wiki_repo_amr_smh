@@ -5,15 +5,25 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.amrsmh.wiki_repo_amr_smh.data.local.dao.LootDao
+import com.amrsmh.wiki_repo_amr_smh.data.local.dao.MonsterDao
+import com.amrsmh.wiki_repo_amr_smh.data.local.dao.ShopItemDao
 import com.amrsmh.wiki_repo_amr_smh.data.local.entities.LootEntity
+import com.amrsmh.wiki_repo_amr_smh.data.local.entities.MonsterEntity
+import com.amrsmh.wiki_repo_amr_smh.data.local.entities.ShopItemEntity
 
-/**
- * Base de datos Room. Version = 1.
- * Nombre del archivo DB: repo_database.db
- */
-@Database(entities = [LootEntity::class], version = 1, exportSchema = false)
+@Database(
+    entities = [
+        LootEntity::class,
+        MonsterEntity::class,
+        ShopItemEntity::class
+    ],
+    version = 2,
+    exportSchema = false
+)
 abstract class RoomDb : RoomDatabase() {
     abstract fun lootDao(): LootDao
+    abstract fun monsterDao(): MonsterDao
+    abstract fun shopItemDao(): ShopItemDao
 
     companion object {
         @Volatile private var INSTANCE: RoomDb? = null
@@ -24,7 +34,9 @@ abstract class RoomDb : RoomDatabase() {
                     context.applicationContext,
                     RoomDb::class.java,
                     "repo_database.db"
-                ).build()
+                )
+                    .fallbackToDestructiveMigration()
+                    .build()
                 INSTANCE = inst
                 inst
             }

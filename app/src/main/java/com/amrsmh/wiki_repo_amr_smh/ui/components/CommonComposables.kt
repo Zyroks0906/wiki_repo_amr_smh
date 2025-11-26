@@ -10,13 +10,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.amrsmh.wiki_repo_amr_smh.domain.models.LootItem
 
-/**
- * TopAppBar reutilizable con navegación opcional.
- * @OptIn necesario porque TopAppBar es experimental en Material3.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RepoTopAppBar(title: String, navigationAction: (() -> Unit)? = null) {
@@ -31,13 +28,14 @@ fun RepoTopAppBar(title: String, navigationAction: (() -> Unit)? = null) {
                     )
                 }
             }
-        }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+        )
     )
 }
 
-/**
- * Card para mostrar un item de Loot con favorito.
- */
 @Composable
 fun LootCard(
     item: LootItem,
@@ -49,7 +47,8 @@ fun LootCard(
             .fillMaxWidth()
             .padding(horizontal = 8.dp, vertical = 4.dp)
             .clickable { onClick() },
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Row(
             modifier = Modifier
@@ -61,7 +60,8 @@ fun LootCard(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = item.name,
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
@@ -78,12 +78,12 @@ fun LootCard(
                         Icons.Default.FavoriteBorder
                     },
                     contentDescription = if (item.isFavorite) {
-                        "Quitar de favoritos"
+                        "Remove from favorites"
                     } else {
-                        "Marcar como favorito"
+                        "Add to favorites"
                     },
                     tint = if (item.isFavorite) {
-                        MaterialTheme.colorScheme.primary
+                        MaterialTheme.colorScheme.secondary
                     } else {
                         MaterialTheme.colorScheme.onSurfaceVariant
                     }

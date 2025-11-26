@@ -1,6 +1,8 @@
 package com.amrsmh.wiki_repo_amr_smh.ui.screens.settings
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -9,13 +11,9 @@ import androidx.compose.ui.unit.dp
 import com.amrsmh.wiki_repo_amr_smh.di.ServiceLocator
 import kotlinx.coroutines.launch
 
-/**
- * Settings: conecta con PreferencesManager a través de ServiceLocator.
- * Muestra y permite cambiar las preferencias principales.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen() {
+fun SettingsScreen(navigateBack: () -> Unit) {
     val prefs = ServiceLocator.providePreferencesManager()
     val scope = rememberCoroutineScope()
 
@@ -25,7 +23,18 @@ fun SettingsScreen() {
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Settings") })
+            TopAppBar(
+                title = { Text("Settings") },
+                navigationIcon = {
+                    IconButton(onClick = navigateBack) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            )
         }
     ) { padding ->
         Column(
@@ -35,7 +44,6 @@ fun SettingsScreen() {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Theme Section
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
@@ -45,7 +53,8 @@ fun SettingsScreen() {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
                         text = "Theme",
-                        style = MaterialTheme.typography.titleMedium
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.secondary
                     )
                     Spacer(Modifier.height(8.dp))
                     Text(
@@ -62,7 +71,7 @@ fun SettingsScreen() {
                             onClick = { scope.launch { prefs.setTheme("LIGHT") } },
                             modifier = Modifier.weight(1f),
                             colors = if (theme == "LIGHT") {
-                                ButtonDefaults.buttonColors()
+                                ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
                             } else {
                                 ButtonDefaults.outlinedButtonColors()
                             }
@@ -73,7 +82,7 @@ fun SettingsScreen() {
                             onClick = { scope.launch { prefs.setTheme("DARK") } },
                             modifier = Modifier.weight(1f),
                             colors = if (theme == "DARK") {
-                                ButtonDefaults.buttonColors()
+                                ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
                             } else {
                                 ButtonDefaults.outlinedButtonColors()
                             }
@@ -84,7 +93,7 @@ fun SettingsScreen() {
                             onClick = { scope.launch { prefs.setTheme("SYSTEM") } },
                             modifier = Modifier.weight(1f),
                             colors = if (theme == "SYSTEM") {
-                                ButtonDefaults.buttonColors()
+                                ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
                             } else {
                                 ButtonDefaults.outlinedButtonColors()
                             }
@@ -95,7 +104,6 @@ fun SettingsScreen() {
                 }
             }
 
-            // List Order Section
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
@@ -105,7 +113,8 @@ fun SettingsScreen() {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
                         text = "List Order",
-                        style = MaterialTheme.typography.titleMedium
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.secondary
                     )
                     Spacer(Modifier.height(8.dp))
                     Text(
@@ -122,7 +131,7 @@ fun SettingsScreen() {
                             onClick = { scope.launch { prefs.setListOrder("BY_DATE") } },
                             modifier = Modifier.weight(1f),
                             colors = if (order == "BY_DATE") {
-                                ButtonDefaults.buttonColors()
+                                ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
                             } else {
                                 ButtonDefaults.outlinedButtonColors()
                             }
@@ -133,7 +142,7 @@ fun SettingsScreen() {
                             onClick = { scope.launch { prefs.setListOrder("BY_VALUE") } },
                             modifier = Modifier.weight(1f),
                             colors = if (order == "BY_VALUE") {
-                                ButtonDefaults.buttonColors()
+                                ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
                             } else {
                                 ButtonDefaults.outlinedButtonColors()
                             }
@@ -144,7 +153,7 @@ fun SettingsScreen() {
                             onClick = { scope.launch { prefs.setListOrder("BY_RARITY") } },
                             modifier = Modifier.weight(1f),
                             colors = if (order == "BY_RARITY") {
-                                ButtonDefaults.buttonColors()
+                                ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
                             } else {
                                 ButtonDefaults.outlinedButtonColors()
                             }
@@ -155,7 +164,6 @@ fun SettingsScreen() {
                 }
             }
 
-            // Favorites Filter
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
@@ -172,7 +180,8 @@ fun SettingsScreen() {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = "Show Only Favorites",
-                            style = MaterialTheme.typography.titleMedium
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.secondary
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
@@ -183,7 +192,11 @@ fun SettingsScreen() {
                     }
                     Switch(
                         checked = favOnly,
-                        onCheckedChange = { scope.launch { prefs.setShowFavorites(it) } }
+                        onCheckedChange = { scope.launch { prefs.setShowFavorites(it) } },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = MaterialTheme.colorScheme.secondary,
+                            checkedTrackColor = MaterialTheme.colorScheme.secondaryContainer
+                        )
                     )
                 }
             }

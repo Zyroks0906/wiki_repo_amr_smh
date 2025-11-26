@@ -1,12 +1,8 @@
-package com.amrsmh.wiki_repo_amr_smh.ui.screens.loot
+package com.amrsmh.wiki_repo_amr_smh.ui.screens.bestiary
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -14,35 +10,35 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.amrsmh.wiki_repo_amr_smh.domain.models.LootItem
-import com.amrsmh.wiki_repo_amr_smh.ui.screens.viewmodel.LootViewModel
-import com.amrsmh.wiki_repo_amr_smh.ui.screens.viewmodel.LootViewModelFactory
+import com.amrsmh.wiki_repo_amr_smh.domain.models.Monster
+import com.amrsmh.wiki_repo_amr_smh.ui.screens.viewmodel.MonsterViewModel
+import com.amrsmh.wiki_repo_amr_smh.ui.screens.viewmodel.MonsterViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LootDetailScreen(id: Long, navigateBack: () -> Unit) {
-    val vm: LootViewModel = viewModel(factory = LootViewModelFactory())
-    val itemFlow = remember(id) { vm.observeById(id) }
-    val item by itemFlow.collectAsState(initial = null)
+fun BestiaryDetailScreen(id: Long, navigateBack: () -> Unit) {
+    val vm: MonsterViewModel = viewModel(factory = MonsterViewModelFactory())
+    val monsterFlow = remember(id) { vm.observeById(id) }
+    val monster by monsterFlow.collectAsState(initial = null)
     var showEditDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(item?.name ?: "Loot Detail") },
+                title = { Text(monster?.name ?: "Monster Detail") },
                 navigationIcon = {
                     IconButton(onClick = navigateBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                 },
                 actions = {
-                    item?.let { loot ->
-                        IconButton(onClick = { vm.toggleFavorite(loot) }) {
+                    monster?.let { m ->
+                        IconButton(onClick = { vm.toggleFavorite(m) }) {
                             Icon(
-                                if (loot.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                if (m.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                                 contentDescription = "Favorite",
-                                tint = if (loot.isFavorite) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurface
+                                tint = if (m.isFavorite) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }
@@ -70,7 +66,7 @@ fun LootDetailScreen(id: Long, navigateBack: () -> Unit) {
             }
         }
     ) { padding ->
-        item?.let { loot ->
+        monster?.let { m ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -78,22 +74,19 @@ fun LootDetailScreen(id: Long, navigateBack: () -> Unit) {
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                DetailCard("Category", loot.category)
-                DetailCard("Rarity", loot.rarity)
-                DetailCard("Value", "${loot.value} SURPLUS")
-                DetailCard("Weight", "${loot.weight} kg")
-                DetailCard("Transport Difficulty", "${loot.transportDifficulty}/5")
-                DetailCard("State", loot.state)
-                if (!loot.notes.isNullOrBlank()) {
-                    DetailCard("Notes", loot.notes)
+                MonsterDetailCard("Danger Level", "${m.danger}/5")
+                MonsterDetailCard("Detection Method", m.detection)
+                if (!m.weaknesses.isNullOrBlank()) {
+                    MonsterDetailCard("Weaknesses", m.weaknesses)
                 }
+                MonsterDetailCard("Tactical Notes", m.notes)
             }
 
             if (showEditDialog) {
-                EditLootDialog(
-                    item = loot,
+                EditMonsterDialog(
+                    monster = m,
                     onConfirm = { updated ->
-                        vm.updateItem(updated)
+                        vm.updateMonster(updated)
                         showEditDialog = false
                     },
                     onDismiss = { showEditDialog = false }
@@ -106,7 +99,7 @@ fun LootDetailScreen(id: Long, navigateBack: () -> Unit) {
                     confirmButton = {
                         Button(
                             onClick = {
-                                vm.deleteItem(loot.id)
+                                vm.deleteMonster(m.id)
                                 navigateBack()
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
@@ -119,8 +112,8 @@ fun LootDetailScreen(id: Long, navigateBack: () -> Unit) {
                             Text("Cancel")
                         }
                     },
-                    title = { Text("Delete Item?") },
-                    text = { Text("Are you sure you want to delete '${loot.name}'? This action cannot be undone.") }
+                    title = { Text("Delete Monster?") },
+                    text = { Text("Are you sure you want to delete '${m.name}'?") }
                 )
             }
         } ?: Box(
@@ -135,7 +128,7 @@ fun LootDetailScreen(id: Long, navigateBack: () -> Unit) {
 }
 
 @Composable
-private fun DetailCard(label: String, value: String) {
+private fun MonsterDetailCard(label: String, value: String) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
@@ -158,26 +151,24 @@ private fun DetailCard(label: String, value: String) {
 }
 
 @Composable
-fun EditLootDialog(item: LootItem, onConfirm: (LootItem) -> Unit, onDismiss: () -> Unit) {
-    var name by remember { mutableStateOf(item.name) }
-    var category by remember { mutableStateOf(item.category) }
-    var valueStr by remember { mutableStateOf(item.value.toString()) }
-    var weightStr by remember { mutableStateOf(item.weight.toString()) }
-    var difficultyStr by remember { mutableStateOf(item.transportDifficulty.toString()) }
-    var notes by remember { mutableStateOf(item.notes ?: "") }
+fun EditMonsterDialog(monster: Monster, onConfirm: (Monster) -> Unit, onDismiss: () -> Unit) {
+    var name by remember { mutableStateOf(monster.name) }
+    var danger by remember { mutableStateOf(monster.danger.toString()) }
+    var detection by remember { mutableStateOf(monster.detection) }
+    var notes by remember { mutableStateOf(monster.notes) }
+    var weaknesses by remember { mutableStateOf(monster.weaknesses ?: "") }
 
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
             Button(
                 onClick = {
-                    val updated = item.copy(
-                        name = name.ifBlank { "Unnamed" },
-                        category = category,
-                        value = valueStr.toIntOrNull() ?: 0,
-                        weight = weightStr.toFloatOrNull() ?: 1f,
-                        transportDifficulty = difficultyStr.toIntOrNull()?.coerceIn(1, 5) ?: 1,
-                        notes = notes.ifBlank { null }
+                    val updated = monster.copy(
+                        name = name.ifBlank { "Unknown" },
+                        danger = danger.toIntOrNull()?.coerceIn(1, 5) ?: 1,
+                        detection = detection.ifBlank { "Unknown" },
+                        notes = notes.ifBlank { "No notes" },
+                        weaknesses = weaknesses.ifBlank { null }
                     )
                     onConfirm(updated)
                 },
@@ -189,7 +180,7 @@ fun EditLootDialog(item: LootItem, onConfirm: (LootItem) -> Unit, onDismiss: () 
         dismissButton = {
             TextButton(onClick = onDismiss) { Text("Cancel") }
         },
-        title = { Text("Edit Loot Item", color = MaterialTheme.colorScheme.secondary) },
+        title = { Text("Edit Monster", color = MaterialTheme.colorScheme.secondary) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(
@@ -199,35 +190,27 @@ fun EditLootDialog(item: LootItem, onConfirm: (LootItem) -> Unit, onDismiss: () 
                     modifier = Modifier.fillMaxWidth()
                 )
                 OutlinedTextField(
-                    value = category,
-                    onValueChange = { category = it },
-                    label = { Text("Category") },
+                    value = danger,
+                    onValueChange = { danger = it },
+                    label = { Text("Danger Level (1-5)") },
                     modifier = Modifier.fillMaxWidth()
                 )
                 OutlinedTextField(
-                    value = valueStr,
-                    onValueChange = { valueStr = it },
-                    label = { Text("Value (SURPLUS)") },
+                    value = detection,
+                    onValueChange = { detection = it },
+                    label = { Text("Detection Method") },
                     modifier = Modifier.fillMaxWidth()
                 )
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedTextField(
-                        value = weightStr,
-                        onValueChange = { weightStr = it },
-                        label = { Text("Weight (kg)") },
-                        modifier = Modifier.weight(1f)
-                    )
-                    OutlinedTextField(
-                        value = difficultyStr,
-                        onValueChange = { difficultyStr = it },
-                        label = { Text("Difficulty (1-5)") },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
+                OutlinedTextField(
+                    value = weaknesses,
+                    onValueChange = { weaknesses = it },
+                    label = { Text("Weaknesses (optional)") },
+                    modifier = Modifier.fillMaxWidth()
+                )
                 OutlinedTextField(
                     value = notes,
                     onValueChange = { notes = it },
-                    label = { Text("Notes") },
+                    label = { Text("Tactical Notes") },
                     modifier = Modifier.fillMaxWidth(),
                     maxLines = 3
                 )

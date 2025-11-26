@@ -5,24 +5,59 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
+// Colores inspirados en el juego
+private val DarkNavy = Color(0xFF0A1628)
+private val DeepBlue = Color(0xFF162A47)
+private val MidBlue = Color(0xFF1E3A5F)
+private val BrightYellow = Color(0xFFFFD700)
+private val AlertYellow = Color(0xFFFFA500)
+private val DangerRed = Color(0xFFDC3545)
+private val SuccessGreen = Color(0xFF28A745)
+private val LightGray = Color(0xFFE0E0E0)
+private val DarkGray = Color(0xFF2C3E50)
+
 private val LightColors = lightColorScheme(
-    primary = Color(0xFFBF3B3B),
+    primary = MidBlue,
     onPrimary = Color.White,
-    secondary = Color(0xFF6B6B6B),
-    background = Color(0xFFF3EFE6),
+    primaryContainer = DeepBlue,
+    onPrimaryContainer = BrightYellow,
+    secondary = AlertYellow,
+    onSecondary = DarkNavy,
+    secondaryContainer = Color(0xFFFFE082),
+    onSecondaryContainer = DarkNavy,
+    tertiary = SuccessGreen,
+    onTertiary = Color.White,
+    error = DangerRed,
+    onError = Color.White,
+    background = LightGray,
+    onBackground = DarkNavy,
     surface = Color.White,
-    onBackground = Color(0xFF121212),
-    onSurface = Color(0xFF121212)
+    onSurface = DarkNavy,
+    surfaceVariant = Color(0xFFF5F5F5),
+    onSurfaceVariant = DarkGray,
+    outline = MidBlue
 )
 
 private val DarkColors = darkColorScheme(
-    primary = Color(0xFFEF6C6C),
-    onPrimary = Color.Black,
-    secondary = Color(0xFF9E9E9E),
-    background = Color(0xFF0F0F0F),
-    surface = Color(0xFF121212),
-    onBackground = Color(0xFFECECEC),
-    onSurface = Color(0xFFECECEC)
+    primary = MidBlue,
+    onPrimary = BrightYellow,
+    primaryContainer = DeepBlue,
+    onPrimaryContainer = BrightYellow,
+    secondary = BrightYellow,
+    onSecondary = DarkNavy,
+    secondaryContainer = AlertYellow,
+    onSecondaryContainer = DarkNavy,
+    tertiary = SuccessGreen,
+    onTertiary = Color.White,
+    error = DangerRed,
+    onError = Color.White,
+    background = DarkNavy,
+    onBackground = LightGray,
+    surface = DeepBlue,
+    onSurface = LightGray,
+    surfaceVariant = MidBlue,
+    onSurfaceVariant = LightGray,
+    outline = BrightYellow
 )
 
 @Composable

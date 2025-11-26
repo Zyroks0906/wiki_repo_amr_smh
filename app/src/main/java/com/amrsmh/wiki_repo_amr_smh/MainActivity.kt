@@ -17,9 +17,8 @@ class MainActivity : ComponentActivity() {
         ServiceLocator.init(applicationContext)
 
         setContent {
-            // en Settings podéis leer DataStore y pasar el theme correcto aquí
             RepoTheme {
-                RepoNavHost()
+                RepoNavHost() // ArrancarÃ¡ en HomeRoute (Dashboard)
             }
         }
     }
