@@ -506,7 +506,7 @@ abstract class RoomDb : RoomDatabase() {
             ))
 
             shopDao.insert(ShopItemEntity(
-                name = "EMP Portátila",
+                name = "EMP Portátil",
                 price = 680,
                 description = "Desactiva dispositivos electrónicos. Radio de 10 metros. Un solo uso",
                 category = "Utilidad",
