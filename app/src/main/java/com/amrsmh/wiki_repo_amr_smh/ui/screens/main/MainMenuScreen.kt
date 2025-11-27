@@ -52,18 +52,18 @@ fun MainMenuScreen(
         ) {
             // Imagen de fondo con transparencia
             Image(
-                painter = painterResource(id = R.drawable.background_main_menu), // Tu imagen aquí
+                painter = painterResource(id = R.drawable.background_main_menu),
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop,
-                alpha = 0.15f // Transparencia (0.0 = invisible, 1.0 = opaco)
+                alpha = 0.8f // Transparencia (0.0 = invisible, 1.0 = opaco)
             )
 
             // Capa semitransparente opcional para mejorar legibilidad
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background.copy(alpha = 0.7f))
+                    .background(MaterialTheme.colorScheme.background.copy(alpha = 0.4f))
             )
 
             // Contenido del menú
