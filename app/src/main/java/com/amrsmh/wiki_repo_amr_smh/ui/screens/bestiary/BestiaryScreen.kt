@@ -1,33 +1,31 @@
 package com.amrsmh.wiki_repo_amr_smh.ui.screens.bestiary
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.amrsmh.wiki_repo_amr_smh.domain.models.Monster
+import com.amrsmh.wiki_repo_amr_smh.ui.screens.viewmodel.MonsterViewModel
+import com.amrsmh.wiki_repo_amr_smh.ui.screens.viewmodel.MonsterViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BestiaryScreen(navigateBack: () -> Unit) {
-    var monsters by remember {
-        mutableStateOf(
-            listOf(
-                Monster(1, "Huntsman", 3, "Sound-based detection", "Stay quiet, use thrown decoys"),
-                Monster(2, "Hidden", 3, "Stealth grabber", "Check corners, listen for breathing"),
-                Monster(3, "Animal", 2, "Aggressive, affected by thrown objects", "Distract with throwables"),
-                Monster(4, "Screamer", 4, "Sound-based alert", "Kill quickly before alert")
-            )
-        )
-    }
-    var showDialog by remember { mutableStateOf(false) }
-    var editingMonster by remember { mutableStateOf<Monster?>(null) }
+fun BestiaryScreen(
+    navigateToDetail: (Long) -> Unit,
+    navigateBack: () -> Unit
+) {
+    val vm: MonsterViewModel = viewModel(factory = MonsterViewModelFactory())
+    val state by vm.uiState.collectAsState()
+    val isDialogOpen by vm.isAddDialogOpen.collectAsState()
 
     Scaffold(
         topBar = {
@@ -37,57 +35,59 @@ fun BestiaryScreen(navigateBack: () -> Unit) {
                     IconButton(onClick = navigateBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                )
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = {
-                editingMonster = null
-                showDialog = true
-            }) {
-                Icon(Icons.Default.Add, contentDescription = "Add Monster")
+            FloatingActionButton(
+                onClick = { vm.showAddDialog(true) },
+                containerColor = MaterialTheme.colorScheme.secondary
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Add", tint = MaterialTheme.colorScheme.onSecondary)
             }
         }
     ) { padding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
-            contentPadding = PaddingValues(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(monsters) { monster ->
-                MonsterCard(
-                    monster = monster,
-                    onEdit = {
-                        editingMonster = monster
-                        showDialog = true
-                    },
-                    onDelete = {
-                        monsters = monsters.filter { it.id != monster.id }
+        Box(modifier = Modifier.padding(padding)) {
+            if (state.monsters.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        "No monsters yet. Add one!",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(state.monsters, key = { it.id }) { monster ->
+                        MonsterCard(
+                            monster = monster,
+                            onClick = { navigateToDetail(monster.id) },
+                            onToggleFavorite = { vm.toggleFavorite(monster) }
+                        )
                     }
+                }
+            }
+
+            if (isDialogOpen) {
+                AddMonsterDialog(
+                    onConfirm = {
+                        vm.addMonster(it.copy(id = 0L, createdAt = System.currentTimeMillis()))
+                        vm.showAddDialog(false)
+                    },
+                    onDismiss = { vm.showAddDialog(false) }
                 )
             }
-        }
-
-        if (showDialog) {
-            MonsterDialog(
-                monster = editingMonster,
-                onDismiss = { showDialog = false },
-                onConfirm = { name, danger, detection, notes ->
-                    if (editingMonster != null) {
-                        monsters = monsters.map {
-                            if (it.id == editingMonster!!.id) {
-                                it.copy(name = name, danger = danger, detection = detection, notes = notes)
-                            } else it
-                        }
-                    } else {
-                        val newId = (monsters.maxOfOrNull { it.id } ?: 0) + 1
-                        monsters = monsters + Monster(newId, name, danger, detection, notes)
-                    }
-                    showDialog = false
-                }
-            )
         }
     }
 }
@@ -95,24 +95,33 @@ fun BestiaryScreen(navigateBack: () -> Unit) {
 @Composable
 private fun MonsterCard(
     monster: Monster,
-    onEdit: () -> Unit,
-    onDelete: () -> Unit
+    onClick: () -> Unit,
+    onToggleFavorite: () -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = monster.name,
-                    style = MaterialTheme.typography.titleLarge
-                )
-                Row {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = monster.name,
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
                     Surface(
                         color = when (monster.danger) {
                             in 1..2 -> MaterialTheme.colorScheme.tertiary
@@ -128,109 +137,91 @@ private fun MonsterCard(
                             color = MaterialTheme.colorScheme.onPrimary
                         )
                     }
-                    Spacer(Modifier.width(8.dp))
-                    IconButton(onClick = onDelete) {
-                        Icon(Icons.Default.Delete, contentDescription = "Delete", tint = MaterialTheme.colorScheme.error)
-                    }
                 }
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = "Detection: ${monster.detection}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
-
-            Spacer(Modifier.height(8.dp))
-
-            Text(
-                text = "Detection: ${monster.detection}",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            Spacer(Modifier.height(8.dp))
-
-            Text(
-                text = "Tactical notes:",
-                style = MaterialTheme.typography.labelMedium
-            )
-            Text(
-                text = monster.notes,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            Spacer(Modifier.height(8.dp))
-
-            Button(
-                onClick = onEdit,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Edit")
+            IconButton(onClick = onToggleFavorite) {
+                Icon(
+                    imageVector = if (monster.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                    contentDescription = if (monster.isFavorite) "Remove from favorites" else "Add to favorites",
+                    tint = if (monster.isFavorite) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
     }
 }
 
 @Composable
-private fun MonsterDialog(
-    monster: Monster?,
-    onDismiss: () -> Unit,
-    onConfirm: (String, Int, String, String) -> Unit
-) {
-    var name by remember { mutableStateOf(monster?.name ?: "") }
-    var dangerStr by remember { mutableStateOf(monster?.danger?.toString() ?: "1") }
-    var detection by remember { mutableStateOf(monster?.detection ?: "") }
-    var notes by remember { mutableStateOf(monster?.notes ?: "") }
+fun AddMonsterDialog(onConfirm: (Monster) -> Unit, onDismiss: () -> Unit) {
+    var name by remember { mutableStateOf("") }
+    var danger by remember { mutableStateOf("1") }
+    var detection by remember { mutableStateOf("") }
+    var notes by remember { mutableStateOf("") }
+    var weaknesses by remember { mutableStateOf("") }
 
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
-            Button(onClick = {
-                val danger = dangerStr.toIntOrNull() ?: 1
-                onConfirm(name, danger, detection, notes)
-            }) {
-                Text(if (monster == null) "Add" else "Save")
+            Button(
+                onClick = {
+                    val monster = Monster(
+                        name = name.ifBlank { "Unknown" },
+                        danger = danger.toIntOrNull()?.coerceIn(1, 5) ?: 1,
+                        detection = detection.ifBlank { "Unknown" },
+                        notes = notes.ifBlank { "No notes" },
+                        weaknesses = weaknesses.ifBlank { null }
+                    )
+                    onConfirm(monster)
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+            ) {
+                Text("Add", color = MaterialTheme.colorScheme.onSecondary)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) { Text("Cancel") }
         },
-        title = { Text(if (monster == null) "New Monster" else "Edit Monster") },
+        title = { Text("New Monster", color = MaterialTheme.colorScheme.secondary) },
         text = {
-            Column {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
                     label = { Text("Name") },
                     modifier = Modifier.fillMaxWidth()
                 )
-                Spacer(Modifier.height(8.dp))
                 OutlinedTextField(
-                    value = dangerStr,
-                    onValueChange = { dangerStr = it },
-                    label = { Text("Danger (1-5)") },
+                    value = danger,
+                    onValueChange = { danger = it },
+                    label = { Text("Danger Level (1-5)") },
                     modifier = Modifier.fillMaxWidth()
                 )
-                Spacer(Modifier.height(8.dp))
                 OutlinedTextField(
                     value = detection,
                     onValueChange = { detection = it },
                     label = { Text("Detection Method") },
                     modifier = Modifier.fillMaxWidth()
                 )
-                Spacer(Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = weaknesses,
+                    onValueChange = { weaknesses = it },
+                    label = { Text("Weaknesses (optional)") },
+                    modifier = Modifier.fillMaxWidth()
+                )
                 OutlinedTextField(
                     value = notes,
                     onValueChange = { notes = it },
                     label = { Text("Tactical Notes") },
                     modifier = Modifier.fillMaxWidth(),
-                    minLines = 2
+                    maxLines = 3
                 )
             }
-        }
+        },
+        containerColor = MaterialTheme.colorScheme.surface
     )
 }
-
-private data class Monster(
-    val id: Long,
-    val name: String,
-    val danger: Int,
-    val detection: String,
-    val notes: String
-)

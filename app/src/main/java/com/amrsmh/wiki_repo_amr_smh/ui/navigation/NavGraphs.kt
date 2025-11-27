@@ -33,7 +33,7 @@ fun RepoNavHost(startDestination: String = "main_menu") {
         // Loot list
         composable("loot_list") {
             LootScreen(
-                navigateToDetail = { id: Long -> navController.navigate("loot_detail/$id") },
+                navigateToDetail = { id -> navController.navigate("loot_detail/$id") },
                 navigateBack = { navController.popBackStack() }
             )
         }
@@ -50,7 +50,7 @@ fun RepoNavHost(startDestination: String = "main_menu") {
         // Bestiary
         composable("bestiary") {
             BestiaryScreen(
-                navigateToDetail = { id: Long -> navController.navigate("bestiary_detail/$id") },
+                navigateToDetail = { id -> navController.navigate("bestiary_detail/$id") },
                 navigateBack = { navController.popBackStack() }
             )
         }
@@ -67,7 +67,7 @@ fun RepoNavHost(startDestination: String = "main_menu") {
         // Shop
         composable("shop") {
             ShopScreen(
-                navigateToDetail = { id: Long -> navController.navigate("shop_detail/$id") },
+                navigateToDetail = { id -> navController.navigate("shop_detail/$id") },
                 navigateBack = { navController.popBackStack() }
             )
         }
