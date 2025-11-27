@@ -1,6 +1,3 @@
-// ==================== 1. MainMenuScreen.kt ====================
-// Ubicación: ui/screens/main/MainMenuScreen.kt
-
 package com.amrsmh.wiki_repo_amr_smh.ui.screens.main
 
 import androidx.compose.foundation.background
@@ -30,7 +27,7 @@ fun MainMenuScreen(
             TopAppBar(
                 title = {
                     Text(
-                        "REPO WIKI",
+                        "WIKI REPO",
                         style = MaterialTheme.typography.headlineMedium.copy(
                             fontWeight = FontWeight.Bold
                         )
@@ -53,29 +50,29 @@ fun MainMenuScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             MenuCard(
-                title = "LOOT LOG",
-                description = "Manage extracted items",
+                title = "BOTÍN",
+                description = "Gestionar objetos extraídos",
                 icon = Icons.Default.ShoppingCart,
                 onClick = navigateToLoot
             )
 
             MenuCard(
-                title = "BESTIARY",
-                description = "Monster database",
+                title = "BESTIARIO",
+                description = "Base de datos de monstruos",
                 icon = Icons.Default.Warning,
                 onClick = navigateToBestiary
             )
 
             MenuCard(
-                title = "SHOP",
-                description = "Equipment and items",
+                title = "TIENDA",
+                description = "Equipamiento y artículos",
                 icon = Icons.Default.ShoppingCart,
                 onClick = navigateToShop
             )
 
             MenuCard(
-                title = "SETTINGS",
-                description = "App preferences",
+                title = "CONFIGURACIÓN",
+                description = "Preferencias de la aplicación",
                 icon = Icons.Default.Settings,
                 onClick = navigateToSettings
             )

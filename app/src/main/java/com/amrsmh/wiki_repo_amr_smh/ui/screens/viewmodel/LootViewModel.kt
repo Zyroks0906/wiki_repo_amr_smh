@@ -2,35 +2,53 @@ package com.amrsmh.wiki_repo_amr_smh.ui.screens.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.amrsmh.wiki_repo_amr_smh.data.datastore.PreferencesManager
 import com.amrsmh.wiki_repo_amr_smh.data.repository.LootRepository
+import com.amrsmh.wiki_repo_amr_smh.di.ServiceLocator
 import com.amrsmh.wiki_repo_amr_smh.domain.models.LootItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-
-/**
- * ViewModel para LootScreen y LootDetailScreen.
- * Expone flows para la UI y funciones CRUD.
- */
 
 data class LootUiState(
     val items: List<LootItem> = emptyList(),
     val isLoading: Boolean = false
 )
 
-class LootViewModel(private val repository: LootRepository) : ViewModel() {
+class LootViewModel(
+    private val repository: LootRepository,
+    private val preferencesManager: PreferencesManager
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LootUiState())
     val uiState: StateFlow<LootUiState> = _uiState.asStateFlow()
 
-    // control simple de diálogo de añadir
     private val _isAddDialogOpen = MutableStateFlow(false)
     val isAddDialogOpen: StateFlow<Boolean> = _isAddDialogOpen.asStateFlow()
 
     init {
         viewModelScope.launch {
-            repository.observeAll().collect { list ->
-                _uiState.update { it.copy(items = list) }
+            combine(
+                repository.observeAll(),
+                preferencesManager.showFavoritesFlow,
+                preferencesManager.listOrderFlow
+            ) { allItems, showFavoritesOnly, order ->
+                var filtered = if (showFavoritesOnly) {
+                    allItems.filter { it.isFavorite }
+                } else {
+                    allItems
+                }
+
+                // Ordenar segÃºn preferencia
+                filtered = when (order) {
+                    "BY_VALUE" -> filtered.sortedByDescending { it.value }
+                    "BY_LOCATION" -> filtered.sortedBy { it.location }
+                    else -> filtered.sortedByDescending { it.createdAt }
+                }
+
+                filtered
+            }.collect { filteredItems ->
+                _uiState.update { it.copy(items = filteredItems) }
             }
         }
     }
@@ -62,6 +80,5 @@ class LootViewModel(private val repository: LootRepository) : ViewModel() {
         updateItem(updated)
     }
 
-    // Observa item por id (útil para pantalla detalle)
     fun observeById(id: Long): Flow<LootItem?> = repository.observeById(id)
 }

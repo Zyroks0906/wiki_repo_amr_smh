@@ -3,6 +3,7 @@ package com.amrsmh.wiki_repo_amr_smh.ui.screens.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.amrsmh.wiki_repo_amr_smh.data.datastore.PreferencesManager
 import com.amrsmh.wiki_repo_amr_smh.data.repository.ShopItemRepository
 import com.amrsmh.wiki_repo_amr_smh.di.ServiceLocator
 import com.amrsmh.wiki_repo_amr_smh.domain.models.ShopItem
@@ -15,7 +16,10 @@ data class ShopUiState(
     val isLoading: Boolean = false
 )
 
-class ShopViewModel(private val repository: ShopItemRepository) : ViewModel() {
+class ShopViewModel(
+    private val repository: ShopItemRepository,
+    private val preferencesManager: PreferencesManager
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ShopUiState())
     val uiState: StateFlow<ShopUiState> = _uiState.asStateFlow()
@@ -25,8 +29,27 @@ class ShopViewModel(private val repository: ShopItemRepository) : ViewModel() {
 
     init {
         viewModelScope.launch {
-            repository.observeAll().collect { list ->
-                _uiState.update { it.copy(items = list) }
+            combine(
+                repository.observeAll(),
+                preferencesManager.showFavoritesFlow,
+                preferencesManager.listOrderFlow
+            ) { allItems, showFavoritesOnly, order ->
+                var filtered = if (showFavoritesOnly) {
+                    allItems.filter { it.isFavorite }
+                } else {
+                    allItems
+                }
+
+                // Ordenar segÃºn preferencia
+                filtered = when (order) {
+                    "BY_PRICE" -> filtered.sortedByDescending { it.price }
+                    "BY_CATEGORY" -> filtered.sortedBy { it.category }
+                    else -> filtered.sortedByDescending { it.createdAt }
+                }
+
+                filtered
+            }.collect { filteredItems ->
+                _uiState.update { it.copy(items = filteredItems) }
             }
         }
     }
@@ -65,6 +88,7 @@ class ShopViewModel(private val repository: ShopItemRepository) : ViewModel() {
 class ShopViewModelFactory : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         val repo = ServiceLocator.provideShopItemRepository()
-        return ShopViewModel(repo) as T
+        val prefs = ServiceLocator.providePreferencesManager()
+        return ShopViewModel(repo, prefs) as T
     }
 }

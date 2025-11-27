@@ -6,10 +6,6 @@ import com.amrsmh.wiki_repo_amr_smh.domain.models.LootItem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-/**
- * Repository: hace mapping Entity <-> Domain (LootItem).
- * Expone Flows para la UI y funciones suspend para escrituras.
- */
 class LootRepository(private val dao: LootDao) {
 
     fun observeAll(): Flow<List<LootItem>> =
@@ -38,13 +34,9 @@ class LootRepository(private val dao: LootDao) {
 private fun LootEntity.toDomain() = LootItem(
     id = id,
     name = name,
-    category = category,
-    rarity = rarity,
+    location = location,
     value = value,
     weight = weight,
-    transportDifficulty = transportDifficulty,
-    state = state,
-    runId = runId,
     notes = notes,
     createdAt = createdAt,
     isFavorite = isFavorite
@@ -53,13 +45,9 @@ private fun LootEntity.toDomain() = LootItem(
 private fun LootItem.toEntity() = LootEntity(
     id = id,
     name = name,
-    category = category,
-    rarity = rarity,
+    location = location,
     value = value,
     weight = weight,
-    transportDifficulty = transportDifficulty,
-    state = state,
-    runId = runId,
     notes = notes,
     createdAt = createdAt,
     isFavorite = isFavorite

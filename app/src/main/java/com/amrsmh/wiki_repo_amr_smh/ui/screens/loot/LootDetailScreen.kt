@@ -30,10 +30,10 @@ fun LootDetailScreen(id: Long, navigateBack: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(item?.name ?: "Loot Detail") },
+                title = { Text(item?.name ?: "Detalle del Botín") },
                 navigationIcon = {
                     IconButton(onClick = navigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Atrás")
                     }
                 },
                 actions = {
@@ -41,7 +41,7 @@ fun LootDetailScreen(id: Long, navigateBack: () -> Unit) {
                         IconButton(onClick = { vm.toggleFavorite(loot) }) {
                             Icon(
                                 if (loot.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                                contentDescription = "Favorite",
+                                contentDescription = "Favorito",
                                 tint = if (loot.isFavorite) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurface
                             )
                         }
@@ -59,13 +59,13 @@ fun LootDetailScreen(id: Long, navigateBack: () -> Unit) {
                     onClick = { showEditDialog = true },
                     containerColor = MaterialTheme.colorScheme.secondary
                 ) {
-                    Icon(Icons.Default.Edit, contentDescription = "Edit", tint = MaterialTheme.colorScheme.onSecondary)
+                    Icon(Icons.Default.Edit, contentDescription = "Editar", tint = MaterialTheme.colorScheme.onSecondary)
                 }
                 FloatingActionButton(
                     onClick = { showDeleteDialog = true },
                     containerColor = MaterialTheme.colorScheme.error
                 ) {
-                    Icon(Icons.Default.Delete, contentDescription = "Delete", tint = MaterialTheme.colorScheme.onError)
+                    Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = MaterialTheme.colorScheme.onError)
                 }
             }
         }
@@ -78,14 +78,11 @@ fun LootDetailScreen(id: Long, navigateBack: () -> Unit) {
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                DetailCard("Category", loot.category)
-                DetailCard("Rarity", loot.rarity)
-                DetailCard("Value", "${loot.value} SURPLUS")
-                DetailCard("Weight", "${loot.weight} kg")
-                DetailCard("Transport Difficulty", "${loot.transportDifficulty}/5")
-                DetailCard("State", loot.state)
+                DetailCard("Ubicación", loot.location)
+                DetailCard("Valor", "${loot.value}")
+                DetailCard("Peso", loot.weight)
                 if (!loot.notes.isNullOrBlank()) {
-                    DetailCard("Notes", loot.notes)
+                    DetailCard("Notas", loot.notes)
                 }
             }
 
@@ -111,16 +108,16 @@ fun LootDetailScreen(id: Long, navigateBack: () -> Unit) {
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                         ) {
-                            Text("Delete")
+                            Text("Eliminar")
                         }
                     },
                     dismissButton = {
                         TextButton(onClick = { showDeleteDialog = false }) {
-                            Text("Cancel")
+                            Text("Cancelar")
                         }
                     },
-                    title = { Text("Delete Item?") },
-                    text = { Text("Are you sure you want to delete '${loot.name}'? This action cannot be undone.") }
+                    title = { Text("¿Eliminar objeto?") },
+                    text = { Text("¿Estás seguro de que quieres eliminar '${loot.name}'? Esta acción no se puede deshacer.") }
                 )
             }
         } ?: Box(
@@ -157,14 +154,20 @@ private fun DetailCard(label: String, value: String) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditLootDialog(item: LootItem, onConfirm: (LootItem) -> Unit, onDismiss: () -> Unit) {
     var name by remember { mutableStateOf(item.name) }
-    var category by remember { mutableStateOf(item.category) }
+    var location by remember { mutableStateOf(item.location) }
     var valueStr by remember { mutableStateOf(item.value.toString()) }
-    var weightStr by remember { mutableStateOf(item.weight.toString()) }
-    var difficultyStr by remember { mutableStateOf(item.transportDifficulty.toString()) }
+    var weight by remember { mutableStateOf(item.weight) }
     var notes by remember { mutableStateOf(item.notes ?: "") }
+
+    var expandedLocation by remember { mutableStateOf(false) }
+    var expandedWeight by remember { mutableStateOf(false) }
+
+    val locationOptions = listOf("Genérico", "Mágico", "Mansión", "Ártico", "Museo")
+    val weightOptions = listOf("Ligero", "Normal", "Pesado", "Muy Pesado")
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -172,62 +175,105 @@ fun EditLootDialog(item: LootItem, onConfirm: (LootItem) -> Unit, onDismiss: () 
             Button(
                 onClick = {
                     val updated = item.copy(
-                        name = name.ifBlank { "Unnamed" },
-                        category = category,
+                        name = name.ifBlank { "Sin nombre" },
+                        location = location,
                         value = valueStr.toIntOrNull() ?: 0,
-                        weight = weightStr.toFloatOrNull() ?: 1f,
-                        transportDifficulty = difficultyStr.toIntOrNull()?.coerceIn(1, 5) ?: 1,
+                        weight = weight,
                         notes = notes.ifBlank { null }
                     )
                     onConfirm(updated)
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
             ) {
-                Text("Save")
+                Text("Guardar")
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            TextButton(onClick = onDismiss) { Text("Cancelar") }
         },
-        title = { Text("Edit Loot Item", color = MaterialTheme.colorScheme.secondary) },
+        title = { Text("Editar Objeto", color = MaterialTheme.colorScheme.secondary) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Name") },
+                    label = { Text("Nombre") },
                     modifier = Modifier.fillMaxWidth()
                 )
-                OutlinedTextField(
-                    value = category,
-                    onValueChange = { category = it },
-                    label = { Text("Category") },
-                    modifier = Modifier.fillMaxWidth()
-                )
+
+                // Dropdown para Ubicación
+                ExposedDropdownMenuBox(
+                    expanded = expandedLocation,
+                    onExpandedChange = { expandedLocation = !expandedLocation }
+                ) {
+                    OutlinedTextField(
+                        value = location,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Ubicación") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedLocation) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor()
+                    )
+                    ExposedDropdownMenu(
+                        expanded = expandedLocation,
+                        onDismissRequest = { expandedLocation = false }
+                    ) {
+                        locationOptions.forEach { option ->
+                            DropdownMenuItem(
+                                text = { Text(option) },
+                                onClick = {
+                                    location = option
+                                    expandedLocation = false
+                                }
+                            )
+                        }
+                    }
+                }
+
                 OutlinedTextField(
                     value = valueStr,
                     onValueChange = { valueStr = it },
-                    label = { Text("Value (SURPLUS)") },
+                    label = { Text("Valor") },
                     modifier = Modifier.fillMaxWidth()
                 )
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+
+                // Dropdown para peso
+                ExposedDropdownMenuBox(
+                    expanded = expandedWeight,
+                    onExpandedChange = { expandedWeight = !expandedWeight }
+                ) {
                     OutlinedTextField(
-                        value = weightStr,
-                        onValueChange = { weightStr = it },
-                        label = { Text("Weight (kg)") },
-                        modifier = Modifier.weight(1f)
+                        value = weight,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Peso") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedWeight) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor()
                     )
-                    OutlinedTextField(
-                        value = difficultyStr,
-                        onValueChange = { difficultyStr = it },
-                        label = { Text("Difficulty (1-5)") },
-                        modifier = Modifier.weight(1f)
-                    )
+                    ExposedDropdownMenu(
+                        expanded = expandedWeight,
+                        onDismissRequest = { expandedWeight = false }
+                    ) {
+                        weightOptions.forEach { option ->
+                            DropdownMenuItem(
+                                text = { Text(option) },
+                                onClick = {
+                                    weight = option
+                                    expandedWeight = false
+                                }
+                            )
+                        }
+                    }
                 }
+
                 OutlinedTextField(
                     value = notes,
                     onValueChange = { notes = it },
-                    label = { Text("Notes") },
+                    label = { Text("Notas") },
                     modifier = Modifier.fillMaxWidth(),
                     maxLines = 3
                 )

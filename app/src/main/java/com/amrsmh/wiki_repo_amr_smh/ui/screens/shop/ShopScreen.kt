@@ -20,7 +20,7 @@ import com.amrsmh.wiki_repo_amr_smh.ui.screens.viewmodel.ShopViewModelFactory
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShopScreen(
-    navigateToDetail: (Long) -> Unit,  // Aquí está el cambio: especificar el tipo Long
+    navigateToDetail: (Long) -> Unit,
     navigateBack: () -> Unit
 ) {
     val vm: ShopViewModel = viewModel(factory = ShopViewModelFactory())
@@ -30,10 +30,10 @@ fun ShopScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Shop") },
+                title = { Text("Tienda") },
                 navigationIcon = {
                     IconButton(onClick = navigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Atrás")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -47,7 +47,7 @@ fun ShopScreen(
                 onClick = { vm.showAddDialog(true) },
                 containerColor = MaterialTheme.colorScheme.secondary
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Add", tint = MaterialTheme.colorScheme.onSecondary)
+                Icon(Icons.Default.Add, contentDescription = "Añadir", tint = MaterialTheme.colorScheme.onSecondary)
             }
         }
     ) { padding ->
@@ -58,7 +58,7 @@ fun ShopScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        "No shop items yet. Add one!",
+                        "No hay artículos todavía. ¡Añade uno!",
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -125,24 +125,39 @@ private fun ShopItemCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(Modifier.height(8.dp))
-                Surface(
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    shape = MaterialTheme.shapes.small
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text(
-                        text = "${item.price} SURPLUS",
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Surface(
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        shape = MaterialTheme.shapes.small
+                    ) {
+                        Text(
+                            text = "${item.price}",
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    Surface(
+                        color = MaterialTheme.colorScheme.secondaryContainer,
+                        shape = MaterialTheme.shapes.small
+                    ) {
+                        Text(
+                            text = item.category,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                    }
                 }
             }
 
             IconButton(onClick = onToggleFavorite) {
                 Icon(
                     imageVector = if (item.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                    contentDescription = if (item.isFavorite) "Remove from wishlist" else "Add to wishlist",
+                    contentDescription = if (item.isFavorite) "Quitar de la lista de deseos" else "Añadir a la lista de deseos",
                     tint = if (item.isFavorite) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -150,12 +165,16 @@ private fun ShopItemCard(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddShopItemDialog(onConfirm: (ShopItem) -> Unit, onDismiss: () -> Unit) {
     var name by remember { mutableStateOf("") }
     var price by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
-    var category by remember { mutableStateOf("Equipment") }
+    var category by remember { mutableStateOf("Arma") }
+
+    var expandedCategory by remember { mutableStateOf(false) }
+    val categoryOptions = listOf("Arma", "Consumible", "Utilidad")
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -163,46 +182,72 @@ fun AddShopItemDialog(onConfirm: (ShopItem) -> Unit, onDismiss: () -> Unit) {
             Button(
                 onClick = {
                     val item = ShopItem(
-                        name = name.ifBlank { "Unnamed" },
+                        name = name.ifBlank { "Sin nombre" },
                         price = price.toIntOrNull() ?: 0,
-                        description = description.ifBlank { "No description" },
+                        description = description.ifBlank { "Sin descripción" },
                         category = category
                     )
                     onConfirm(item)
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
             ) {
-                Text("Add", color = MaterialTheme.colorScheme.onSecondary)
+                Text("Añadir", color = MaterialTheme.colorScheme.onSecondary)
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            TextButton(onClick = onDismiss) { Text("Cancelar") }
         },
-        title = { Text("New Shop Item", color = MaterialTheme.colorScheme.secondary) },
+        title = { Text("Nuevo Artículo", color = MaterialTheme.colorScheme.secondary) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Name") },
+                    label = { Text("Nombre") },
                     modifier = Modifier.fillMaxWidth()
                 )
                 OutlinedTextField(
                     value = price,
                     onValueChange = { price = it },
-                    label = { Text("Price (SURPLUS)") },
+                    label = { Text("Precio") },
                     modifier = Modifier.fillMaxWidth()
                 )
-                OutlinedTextField(
-                    value = category,
-                    onValueChange = { category = it },
-                    label = { Text("Category") },
-                    modifier = Modifier.fillMaxWidth()
-                )
+
+                // Dropdown para Categoría
+                ExposedDropdownMenuBox(
+                    expanded = expandedCategory,
+                    onExpandedChange = { expandedCategory = !expandedCategory }
+                ) {
+                    OutlinedTextField(
+                        value = category,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Categoría") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCategory) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor()
+                    )
+                    ExposedDropdownMenu(
+                        expanded = expandedCategory,
+                        onDismissRequest = { expandedCategory = false }
+                    ) {
+                        categoryOptions.forEach { option ->
+                            DropdownMenuItem(
+                                text = { Text(option) },
+                                onClick = {
+                                    category = option
+                                    expandedCategory = false
+                                }
+                            )
+                        }
+                    }
+                }
+
                 OutlinedTextField(
                     value = description,
                     onValueChange = { description = it },
-                    label = { Text("Description") },
+                    label = { Text("Descripción") },
                     modifier = Modifier.fillMaxWidth(),
                     maxLines = 3
                 )

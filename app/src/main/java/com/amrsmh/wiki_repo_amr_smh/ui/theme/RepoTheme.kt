@@ -3,7 +3,10 @@ package com.amrsmh.wiki_repo_amr_smh.ui.theme
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
+import com.amrsmh.wiki_repo_amr_smh.di.ServiceLocator
 
 // Colores inspirados en el juego
 private val DarkNavy = Color(0xFF0A1628)
@@ -61,8 +64,19 @@ private val DarkColors = darkColorScheme(
 )
 
 @Composable
-fun RepoTheme(useDark: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
+fun RepoTheme(content: @Composable () -> Unit) {
+    val prefsManager = ServiceLocator.providePreferencesManager()
+    val themeMode by prefsManager.themeFlow.collectAsState(initial = "SYSTEM")
+    val isSystemInDarkTheme = isSystemInDarkTheme()
+
+    val useDark = when (themeMode) {
+        "LIGHT" -> false
+        "DARK" -> true
+        else -> isSystemInDarkTheme
+    }
+
     val colors = if (useDark) DarkColors else LightColors
+
     MaterialTheme(
         colorScheme = colors,
         typography = Typography(),

@@ -4,10 +4,6 @@ import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
 
-/**
- * Entidad Room para persistir objetos recuperados (Loot).
- * Incluye índices recomendados (createdAt, isFavorite).
- */
 @Entity(
     tableName = "loot_items",
     indices = [
@@ -18,13 +14,9 @@ import androidx.room.PrimaryKey
 data class LootEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0L,
     val name: String,
-    val category: String,
-    val rarity: String,
+    val location: String,
     val value: Int,
-    val weight: Float,
-    val transportDifficulty: Int,
-    val state: String,
-    val runId: String?,
+    val weight: String,
     val notes: String?,
     val createdAt: Long,
     val isFavorite: Boolean

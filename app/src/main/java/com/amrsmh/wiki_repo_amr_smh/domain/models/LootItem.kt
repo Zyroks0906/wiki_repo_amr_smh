@@ -7,13 +7,9 @@ package com.amrsmh.wiki_repo_amr_smh.domain.models
 data class LootItem(
     val id: Long = 0L,
     val name: String,
-    val category: String,
-    val rarity: String,
+    val location: String, // "Genérico", "Mágico", "Mansión", "Ártico", "Museo"
     val value: Int,
-    val weight: Float,
-    val transportDifficulty: Int,
-    val state: String,
-    val runId: String? = null,
+    val weight: String, // "Ligero", "Normal", "Pesado", "Muy Pesado"
     val notes: String? = null,
     val createdAt: Long = System.currentTimeMillis(),
     val isFavorite: Boolean = false

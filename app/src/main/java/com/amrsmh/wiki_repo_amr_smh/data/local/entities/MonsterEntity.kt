@@ -17,7 +17,6 @@ data class MonsterEntity(
     val danger: Int,
     val detection: String,
     val notes: String,
-    val weaknesses: String?,
     val createdAt: Long,
     val isFavorite: Boolean
 )

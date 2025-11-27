@@ -24,10 +24,10 @@ fun SettingsScreen(navigateBack: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Settings") },
+                title = { Text("Configuración") },
                 navigationIcon = {
                     IconButton(onClick = navigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Atrás")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -52,13 +52,17 @@ fun SettingsScreen(navigateBack: () -> Unit) {
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "Theme",
+                        text = "Tema",
                         style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.secondary
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(Modifier.height(8.dp))
                     Text(
-                        text = "Current: $theme",
+                        text = "Actual: ${when(theme) {
+                            "LIGHT" -> "Claro"
+                            "DARK" -> "Oscuro"
+                            else -> "Sistema"
+                        }}",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -71,34 +75,52 @@ fun SettingsScreen(navigateBack: () -> Unit) {
                             onClick = { scope.launch { prefs.setTheme("LIGHT") } },
                             modifier = Modifier.weight(1f),
                             colors = if (theme == "LIGHT") {
-                                ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                                ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.primary,
+                                    contentColor = MaterialTheme.colorScheme.onPrimary
+                                )
                             } else {
-                                ButtonDefaults.outlinedButtonColors()
+                                ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.surface,
+                                    contentColor = MaterialTheme.colorScheme.onSurface
+                                )
                             }
                         ) {
-                            Text("Light")
+                            Text("Claro")
                         }
                         Button(
                             onClick = { scope.launch { prefs.setTheme("DARK") } },
                             modifier = Modifier.weight(1f),
                             colors = if (theme == "DARK") {
-                                ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                                ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.primary,
+                                    contentColor = MaterialTheme.colorScheme.onPrimary
+                                )
                             } else {
-                                ButtonDefaults.outlinedButtonColors()
+                                ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.surface,
+                                    contentColor = MaterialTheme.colorScheme.onSurface
+                                )
                             }
                         ) {
-                            Text("Dark")
+                            Text("Oscuro")
                         }
                         Button(
                             onClick = { scope.launch { prefs.setTheme("SYSTEM") } },
                             modifier = Modifier.weight(1f),
                             colors = if (theme == "SYSTEM") {
-                                ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                                ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.primary,
+                                    contentColor = MaterialTheme.colorScheme.onPrimary
+                                )
                             } else {
-                                ButtonDefaults.outlinedButtonColors()
+                                ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.surface,
+                                    contentColor = MaterialTheme.colorScheme.onSurface
+                                )
                             }
                         ) {
-                            Text("System")
+                            Text("Sistema")
                         }
                     }
                 }
@@ -112,53 +134,106 @@ fun SettingsScreen(navigateBack: () -> Unit) {
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "List Order",
+                        text = "Orden de Lista",
                         style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.secondary
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(Modifier.height(8.dp))
                     Text(
-                        text = "Current: ${order.replace("_", " ").lowercase().replaceFirstChar { it.uppercase() }}",
+                        text = "Actual: ${when(order) {
+                            "BY_DATE" -> "Por Fecha"
+                            "BY_VALUE" -> "Por Valor"
+                            "BY_PRICE" -> "Por Precio"
+                            "BY_DANGER" -> "Por Peligro"
+                            "BY_LOCATION" -> "Por Ubicación"
+                            "BY_CATEGORY" -> "Por Categoría"
+                            "BY_NAME" -> "Por Nombre"
+                            else -> "Por Fecha"
+                        }}",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(Modifier.height(12.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Button(
-                            onClick = { scope.launch { prefs.setListOrder("BY_DATE") } },
-                            modifier = Modifier.weight(1f),
-                            colors = if (order == "BY_DATE") {
-                                ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
-                            } else {
-                                ButtonDefaults.outlinedButtonColors()
-                            }
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Text("By Date")
+                            Button(
+                                onClick = { scope.launch { prefs.setListOrder("BY_DATE") } },
+                                modifier = Modifier.weight(1f),
+                                colors = if (order == "BY_DATE") {
+                                    ButtonDefaults.buttonColors(
+                                        containerColor = MaterialTheme.colorScheme.primary,
+                                        contentColor = MaterialTheme.colorScheme.onPrimary
+                                    )
+                                } else {
+                                    ButtonDefaults.buttonColors(
+                                        containerColor = MaterialTheme.colorScheme.surface,
+                                        contentColor = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+                            ) {
+                                Text("Por Fecha")
+                            }
+                            Button(
+                                onClick = { scope.launch { prefs.setListOrder("BY_VALUE") } },
+                                modifier = Modifier.weight(1f),
+                                colors = if (order == "BY_VALUE") {
+                                    ButtonDefaults.buttonColors(
+                                        containerColor = MaterialTheme.colorScheme.primary,
+                                        contentColor = MaterialTheme.colorScheme.onPrimary
+                                    )
+                                } else {
+                                    ButtonDefaults.buttonColors(
+                                        containerColor = MaterialTheme.colorScheme.surface,
+                                        contentColor = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+                            ) {
+                                Text("Por Valor")
+                            }
                         }
-                        Button(
-                            onClick = { scope.launch { prefs.setListOrder("BY_VALUE") } },
-                            modifier = Modifier.weight(1f),
-                            colors = if (order == "BY_VALUE") {
-                                ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
-                            } else {
-                                ButtonDefaults.outlinedButtonColors()
-                            }
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Text("By Value")
-                        }
-                        Button(
-                            onClick = { scope.launch { prefs.setListOrder("BY_RARITY") } },
-                            modifier = Modifier.weight(1f),
-                            colors = if (order == "BY_RARITY") {
-                                ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
-                            } else {
-                                ButtonDefaults.outlinedButtonColors()
+                            Button(
+                                onClick = { scope.launch { prefs.setListOrder("BY_DANGER") } },
+                                modifier = Modifier.weight(1f),
+                                colors = if (order == "BY_DANGER") {
+                                    ButtonDefaults.buttonColors(
+                                        containerColor = MaterialTheme.colorScheme.primary,
+                                        contentColor = MaterialTheme.colorScheme.onPrimary
+                                    )
+                                } else {
+                                    ButtonDefaults.buttonColors(
+                                        containerColor = MaterialTheme.colorScheme.surface,
+                                        contentColor = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+                            ) {
+                                Text("Por Peligro")
                             }
-                        ) {
-                            Text("By Rarity")
+                            Button(
+                                onClick = { scope.launch { prefs.setListOrder("BY_PRICE") } },
+                                modifier = Modifier.weight(1f),
+                                colors = if (order == "BY_PRICE") {
+                                    ButtonDefaults.buttonColors(
+                                        containerColor = MaterialTheme.colorScheme.primary,
+                                        contentColor = MaterialTheme.colorScheme.onPrimary
+                                    )
+                                } else {
+                                    ButtonDefaults.buttonColors(
+                                        containerColor = MaterialTheme.colorScheme.surface,
+                                        contentColor = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+                            ) {
+                                Text("Por Precio")
+                            }
                         }
                     }
                 }
@@ -179,13 +254,13 @@ fun SettingsScreen(navigateBack: () -> Unit) {
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Show Only Favorites",
+                            text = "Mostrar Solo Favoritos",
                             style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.secondary
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            text = "Filter list to show only favorite items",
+                            text = "Filtrar lista para mostrar solo objetos favoritos",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -194,8 +269,8 @@ fun SettingsScreen(navigateBack: () -> Unit) {
                         checked = favOnly,
                         onCheckedChange = { scope.launch { prefs.setShowFavorites(it) } },
                         colors = SwitchDefaults.colors(
-                            checkedThumbColor = MaterialTheme.colorScheme.secondary,
-                            checkedTrackColor = MaterialTheme.colorScheme.secondaryContainer
+                            checkedThumbColor = MaterialTheme.colorScheme.primary,
+                            checkedTrackColor = MaterialTheme.colorScheme.primaryContainer
                         )
                     )
                 }

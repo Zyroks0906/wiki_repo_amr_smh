@@ -24,7 +24,7 @@ fun RepoTopAppBar(title: String, navigationAction: (() -> Unit)? = null) {
                 IconButton(onClick = navigationAction) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Back"
+                        contentDescription = "Atrás"
                     )
                 }
             }
@@ -65,7 +65,7 @@ fun LootCard(
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    text = "${item.category} • ${item.rarity} • ${item.value} SURPLUS",
+                    text = "${item.location} • ${item.value}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -78,9 +78,9 @@ fun LootCard(
                         Icons.Default.FavoriteBorder
                     },
                     contentDescription = if (item.isFavorite) {
-                        "Remove from favorites"
+                        "Quitar de favoritos"
                     } else {
-                        "Add to favorites"
+                        "Añadir a favoritos"
                     },
                     tint = if (item.isFavorite) {
                         MaterialTheme.colorScheme.secondary

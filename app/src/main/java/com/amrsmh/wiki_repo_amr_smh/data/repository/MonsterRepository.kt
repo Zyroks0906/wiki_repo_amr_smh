@@ -8,8 +8,6 @@ import kotlinx.coroutines.flow.map
 
 class MonsterRepository(private val dao: MonsterDao) {
 
-    // --- ObservaciÃ³n de Datos ---
-
     fun observeAll(): Flow<List<Monster>> =
         dao.getAllFlow().map { entities -> entities.map { it.toDomain() } }
 
@@ -18,8 +16,6 @@ class MonsterRepository(private val dao: MonsterDao) {
 
     fun observeById(id: Long): Flow<Monster?> =
         dao.getByIdFlow(id).map { entity -> entity?.toDomain() }
-
-    // --- Operaciones Suspendidas (Base de Datos) ---
 
     suspend fun add(monster: Monster) {
         dao.insert(monster.toEntity())
@@ -33,26 +29,22 @@ class MonsterRepository(private val dao: MonsterDao) {
         dao.deleteById(id)
     }
 
-    // --- Funciones de Mapeo (Mapper Functions) ---
-
     private fun MonsterEntity.toDomain() = Monster(
-        id = id, // Uso directo de la propiedad 'id' de MonsterEntity
+        id = id,
         name = name,
         danger = danger,
         detection = detection,
         notes = notes,
-        weaknesses = weaknesses,
         createdAt = createdAt,
         isFavorite = isFavorite
     )
 
     private fun Monster.toEntity() = MonsterEntity(
-        id = id, // Uso directo de la propiedad 'id' de Monster
+        id = id,
         name = name,
         danger = danger,
         detection = detection,
         notes = notes,
-        weaknesses = weaknesses,
         createdAt = createdAt,
         isFavorite = isFavorite
     )

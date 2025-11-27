@@ -10,6 +10,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -30,10 +31,10 @@ fun BestiaryScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Bestiary") },
+                title = { Text("Bestiario") },
                 navigationIcon = {
                     IconButton(onClick = navigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Atrás")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -47,7 +48,7 @@ fun BestiaryScreen(
                 onClick = { vm.showAddDialog(true) },
                 containerColor = MaterialTheme.colorScheme.secondary
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Add", tint = MaterialTheme.colorScheme.onSecondary)
+                Icon(Icons.Default.Add, contentDescription = "Añadir", tint = MaterialTheme.colorScheme.onSecondary)
             }
         }
     ) { padding ->
@@ -58,7 +59,7 @@ fun BestiaryScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        "No monsters yet. Add one!",
+                        "No hay monstruos todavía. ¡Añade uno!",
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -98,6 +99,13 @@ private fun MonsterCard(
     onClick: () -> Unit,
     onToggleFavorite: () -> Unit
 ) {
+    val dangerColor = when (monster.danger) {
+        1 -> Color(0xFF28A745) // Verde
+        2 -> Color(0xFFFFA500) // Amarillo/Naranja
+        3 -> Color(0xFFDC3545) // Rojo
+        else -> Color.Gray
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -123,24 +131,21 @@ private fun MonsterCard(
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Surface(
-                        color = when (monster.danger) {
-                            in 1..2 -> MaterialTheme.colorScheme.tertiary
-                            3 -> MaterialTheme.colorScheme.primary
-                            else -> MaterialTheme.colorScheme.error
-                        },
+                        color = dangerColor,
                         shape = MaterialTheme.shapes.small
                     ) {
                         Text(
-                            text = "Danger: ${monster.danger}",
+                            text = "Peligro: ${monster.danger}",
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                             style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onPrimary
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 }
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    text = "Detection: ${monster.detection}",
+                    text = "Detección: ${monster.detection}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -148,7 +153,7 @@ private fun MonsterCard(
             IconButton(onClick = onToggleFavorite) {
                 Icon(
                     imageVector = if (monster.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                    contentDescription = if (monster.isFavorite) "Remove from favorites" else "Add to favorites",
+                    contentDescription = if (monster.isFavorite) "Quitar de favoritos" else "Añadir a favoritos",
                     tint = if (monster.isFavorite) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -156,13 +161,19 @@ private fun MonsterCard(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddMonsterDialog(onConfirm: (Monster) -> Unit, onDismiss: () -> Unit) {
     var name by remember { mutableStateOf("") }
-    var danger by remember { mutableStateOf("1") }
-    var detection by remember { mutableStateOf("") }
+    var danger by remember { mutableStateOf(1) }
+    var detection by remember { mutableStateOf("Visión") }
     var notes by remember { mutableStateOf("") }
-    var weaknesses by remember { mutableStateOf("") }
+
+    var expandedDanger by remember { mutableStateOf(false) }
+    var expandedDetection by remember { mutableStateOf(false) }
+
+    val dangerOptions = listOf(1, 2, 3)
+    val detectionOptions = listOf("Visión", "Audio")
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -170,53 +181,97 @@ fun AddMonsterDialog(onConfirm: (Monster) -> Unit, onDismiss: () -> Unit) {
             Button(
                 onClick = {
                     val monster = Monster(
-                        name = name.ifBlank { "Unknown" },
-                        danger = danger.toIntOrNull()?.coerceIn(1, 5) ?: 1,
-                        detection = detection.ifBlank { "Unknown" },
-                        notes = notes.ifBlank { "No notes" },
-                        weaknesses = weaknesses.ifBlank { null }
+                        name = name.ifBlank { "Desconocido" },
+                        danger = danger,
+                        detection = detection,
+                        notes = notes.ifBlank { "Sin notas" }
                     )
                     onConfirm(monster)
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
             ) {
-                Text("Add", color = MaterialTheme.colorScheme.onSecondary)
+                Text("Añadir", color = MaterialTheme.colorScheme.onSecondary)
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            TextButton(onClick = onDismiss) { Text("Cancelar") }
         },
-        title = { Text("New Monster", color = MaterialTheme.colorScheme.secondary) },
+        title = { Text("Nuevo Monstruo", color = MaterialTheme.colorScheme.secondary) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Name") },
+                    label = { Text("Nombre") },
                     modifier = Modifier.fillMaxWidth()
                 )
-                OutlinedTextField(
-                    value = danger,
-                    onValueChange = { danger = it },
-                    label = { Text("Danger Level (1-5)") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                OutlinedTextField(
-                    value = detection,
-                    onValueChange = { detection = it },
-                    label = { Text("Detection Method") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                OutlinedTextField(
-                    value = weaknesses,
-                    onValueChange = { weaknesses = it },
-                    label = { Text("Weaknesses (optional)") },
-                    modifier = Modifier.fillMaxWidth()
-                )
+
+                // Dropdown para Nivel de Peligro
+                ExposedDropdownMenuBox(
+                    expanded = expandedDanger,
+                    onExpandedChange = { expandedDanger = !expandedDanger }
+                ) {
+                    OutlinedTextField(
+                        value = "Nivel $danger",
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Nivel de Peligro") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedDanger) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor()
+                    )
+                    ExposedDropdownMenu(
+                        expanded = expandedDanger,
+                        onDismissRequest = { expandedDanger = false }
+                    ) {
+                        dangerOptions.forEach { option ->
+                            DropdownMenuItem(
+                                text = { Text("Nivel $option") },
+                                onClick = {
+                                    danger = option
+                                    expandedDanger = false
+                                }
+                            )
+                        }
+                    }
+                }
+
+                // Dropdown para Método de Detección
+                ExposedDropdownMenuBox(
+                    expanded = expandedDetection,
+                    onExpandedChange = { expandedDetection = !expandedDetection }
+                ) {
+                    OutlinedTextField(
+                        value = detection,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Método de Detección") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedDetection) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor()
+                    )
+                    ExposedDropdownMenu(
+                        expanded = expandedDetection,
+                        onDismissRequest = { expandedDetection = false }
+                    ) {
+                        detectionOptions.forEach { option ->
+                            DropdownMenuItem(
+                                text = { Text(option) },
+                                onClick = {
+                                    detection = option
+                                    expandedDetection = false
+                                }
+                            )
+                        }
+                    }
+                }
+
                 OutlinedTextField(
                     value = notes,
                     onValueChange = { notes = it },
-                    label = { Text("Tactical Notes") },
+                    label = { Text("Notas Tácticas") },
                     modifier = Modifier.fillMaxWidth(),
                     maxLines = 3
                 )

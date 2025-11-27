@@ -7,10 +7,9 @@ package com.amrsmh.wiki_repo_amr_smh.domain.models
 data class Monster(
     val id: Long = 0L,
     val name: String,
-    val danger: Int,
-    val detection: String,
+    val danger: Int, // 1-3
+    val detection: String, // "VisiÃ³n" o "Audio"
     val notes: String,
-    val weaknesses: String? = null,
     val createdAt: Long = System.currentTimeMillis(),
     val isFavorite: Boolean = false
 )

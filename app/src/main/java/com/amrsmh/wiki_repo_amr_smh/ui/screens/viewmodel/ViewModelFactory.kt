@@ -8,6 +8,7 @@ import com.amrsmh.wiki_repo_amr_smh.di.ServiceLocator
 class LootViewModelFactory : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         val repo = ServiceLocator.provideLootRepository()
-        return LootViewModel(repo) as T
+        val prefs = ServiceLocator.providePreferencesManager()
+        return LootViewModel(repo, prefs) as T
     }
 }

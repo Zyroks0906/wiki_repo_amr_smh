@@ -5,7 +5,7 @@ data class ShopItem(
     val name: String,
     val price: Int,
     val description: String,
-    val category: String,
+    val category: String, // "Arma", "Consumible", "Utilidad"
     val createdAt: Long = System.currentTimeMillis(),
     val isFavorite: Boolean = false
 )

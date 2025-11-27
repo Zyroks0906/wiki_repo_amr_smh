@@ -6,11 +6,6 @@ import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-/**
- * Preferences DataStore (Preferences API).
- * Almacena: theme_mode, list_order, show_favorites.
- */
-
 private val Context.dataStore by preferencesDataStore(name = "repo_preferences")
 
 class PreferencesManager(private val context: Context) {

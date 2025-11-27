@@ -20,7 +20,7 @@ import com.amrsmh.wiki_repo_amr_smh.ui.screens.viewmodel.LootViewModelFactory
 @Composable
 fun LootScreen(
     navigateToDetail: (Long) -> Unit,
-    navigateBack: () -> Unit // ✅ NUEVO
+    navigateBack: () -> Unit
 ) {
     val vm: LootViewModel = viewModel(factory = LootViewModelFactory())
     val state by vm.uiState.collectAsState()
@@ -29,35 +29,34 @@ fun LootScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Loot Log") },
-                navigationIcon = { // ✅ NUEVO
+                title = { Text("Botín") },
+                navigationIcon = {
                     IconButton(onClick = navigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Atrás")
                     }
                 }
             )
         },
         floatingActionButton = {
             FloatingActionButton(onClick = { vm.showAddDialog(true) }) {
-                Icon(Icons.Default.Add, contentDescription = "Add")
+                Icon(Icons.Default.Add, contentDescription = "Añadir")
             }
         }
     ) { padding ->
         Box(modifier = Modifier.padding(padding)) {
             if (state.items.isEmpty()) {
-                // Mensaje si no hay items
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = androidx.compose.ui.Alignment.Center
                 ) {
                     Column(horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
                         Text(
-                            text = "No loot items yet",
+                            text = "No hay objetos todavía",
                             style = MaterialTheme.typography.titleLarge
                         )
                         Spacer(Modifier.height(8.dp))
                         Text(
-                            text = "Tap + to add your first item",
+                            text = "Toca + para añadir tu primer objeto",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -92,11 +91,20 @@ fun LootScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddLootDialog(onConfirm: (LootItem) -> Unit, onDismiss: () -> Unit) {
     var name by remember { mutableStateOf("") }
-    var category by remember { mutableStateOf("generic") }
+    var location by remember { mutableStateOf("Genérico") }
     var valueStr by remember { mutableStateOf("") }
+    var weight by remember { mutableStateOf("Normal") }
+    var notes by remember { mutableStateOf("") }
+
+    var expandedLocation by remember { mutableStateOf(false) }
+    var expandedWeight by remember { mutableStateOf(false) }
+
+    val locationOptions = listOf("Genérico", "Mágico", "Mansión", "Ártico", "Museo")
+    val weightOptions = listOf("Ligero", "Normal", "Pesado", "Muy Pesado")
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -104,48 +112,107 @@ fun AddLootDialog(onConfirm: (LootItem) -> Unit, onDismiss: () -> Unit) {
             Button(onClick = {
                 val value = valueStr.toIntOrNull() ?: 0
                 val item = LootItem(
-                    name = name.ifBlank { "Unnamed" },
-                    category = category,
-                    rarity = "common",
+                    name = name.ifBlank { "Sin nombre" },
+                    location = location,
                     value = value,
-                    weight = 1f,
-                    transportDifficulty = 1,
-                    state = "extracted",
-                    runId = null,
-                    notes = null,
+                    weight = weight,
+                    notes = notes.ifBlank { null },
                     createdAt = System.currentTimeMillis(),
                     isFavorite = false
                 )
                 onConfirm(item)
             }) {
-                Text("Add")
+                Text("Añadir")
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            TextButton(onClick = onDismiss) { Text("Cancelar") }
         },
-        title = { Text("New Loot Item") },
+        title = { Text("Nuevo Objeto") },
         text = {
-            Column {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Name") },
+                    label = { Text("Nombre") },
                     modifier = Modifier.fillMaxWidth()
                 )
-                Spacer(Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = category,
-                    onValueChange = { category = it },
-                    label = { Text("Category") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(Modifier.height(8.dp))
+
+                // Dropdown para Ubicación
+                ExposedDropdownMenuBox(
+                    expanded = expandedLocation,
+                    onExpandedChange = { expandedLocation = !expandedLocation }
+                ) {
+                    OutlinedTextField(
+                        value = location,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Ubicación") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedLocation) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor()
+                    )
+                    ExposedDropdownMenu(
+                        expanded = expandedLocation,
+                        onDismissRequest = { expandedLocation = false }
+                    ) {
+                        locationOptions.forEach { option ->
+                            DropdownMenuItem(
+                                text = { Text(option) },
+                                onClick = {
+                                    location = option
+                                    expandedLocation = false
+                                }
+                            )
+                        }
+                    }
+                }
+
                 OutlinedTextField(
                     value = valueStr,
                     onValueChange = { valueStr = it },
-                    label = { Text("Value (SURPLUS)") },
+                    label = { Text("Valor") },
                     modifier = Modifier.fillMaxWidth()
+                )
+
+                // Dropdown para peso
+                ExposedDropdownMenuBox(
+                    expanded = expandedWeight,
+                    onExpandedChange = { expandedWeight = !expandedWeight }
+                ) {
+                    OutlinedTextField(
+                        value = weight,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Peso") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedWeight) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor()
+                    )
+                    ExposedDropdownMenu(
+                        expanded = expandedWeight,
+                        onDismissRequest = { expandedWeight = false }
+                    ) {
+                        weightOptions.forEach { option ->
+                            DropdownMenuItem(
+                                text = { Text(option) },
+                                onClick = {
+                                    weight = option
+                                    expandedWeight = false
+                                }
+                            )
+                        }
+                    }
+                }
+
+                OutlinedTextField(
+                    value = notes,
+                    onValueChange = { notes = it },
+                    label = { Text("Notas (opcional)") },
+                    modifier = Modifier.fillMaxWidth(),
+                    maxLines = 3
                 )
             }
         }
