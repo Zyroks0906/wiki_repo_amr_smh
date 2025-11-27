@@ -1,5 +1,6 @@
 package com.amrsmh.wiki_repo_amr_smh.ui.screens.main
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -10,9 +11,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.amrsmh.wiki_repo_amr_smh.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,42 +45,63 @@ fun MainMenuScreen(
             )
         }
     ) { padding ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
                 .padding(padding)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
-            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            MenuCard(
-                title = "BOTÍN",
-                description = "Gestionar objetos extraídos",
-                icon = Icons.Default.ShoppingCart,
-                onClick = navigateToLoot
+            // Imagen de fondo con transparencia
+            Image(
+                painter = painterResource(id = R.drawable.background_main_menu), // Tu imagen aquí
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop,
+                alpha = 0.15f // Transparencia (0.0 = invisible, 1.0 = opaco)
             )
 
-            MenuCard(
-                title = "BESTIARIO",
-                description = "Base de datos de monstruos",
-                icon = Icons.Default.Warning,
-                onClick = navigateToBestiary
+            // Capa semitransparente opcional para mejorar legibilidad
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background.copy(alpha = 0.7f))
             )
 
-            MenuCard(
-                title = "TIENDA",
-                description = "Equipamiento y artículos",
-                icon = Icons.Default.ShoppingCart,
-                onClick = navigateToShop
-            )
+            // Contenido del menú
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                MenuCard(
+                    title = "BOTÍN",
+                    description = "Gestionar objetos extraídos",
+                    icon = Icons.Default.ShoppingCart,
+                    onClick = navigateToLoot
+                )
 
-            MenuCard(
-                title = "CONFIGURACIÓN",
-                description = "Preferencias de la aplicación",
-                icon = Icons.Default.Settings,
-                onClick = navigateToSettings
-            )
+                MenuCard(
+                    title = "BESTIARIO",
+                    description = "Base de datos de monstruos",
+                    icon = Icons.Default.Warning,
+                    onClick = navigateToBestiary
+                )
+
+                MenuCard(
+                    title = "TIENDA",
+                    description = "Equipamiento y artículos",
+                    icon = Icons.Default.ShoppingCart,
+                    onClick = navigateToShop
+                )
+
+                MenuCard(
+                    title = "CONFIGURACIÓN",
+                    description = "Preferencias de la aplicación",
+                    icon = Icons.Default.Settings,
+                    onClick = navigateToSettings
+                )
+            }
         }
     }
 }
@@ -94,7 +120,7 @@ private fun MenuCard(
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(8.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f) // Ligeramente transparente
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
