@@ -1,202 +1,188 @@
 # Wiki REPO - Android App
 
-Aplicación Android para gestionar y catalogar objetos recuperados (Loot) del juego R.E.P.O.
+![Android](https://img.shields.io/badge/Platform-Android-brightgreen) ![Kotlin](https://img.shields.io/badge/Language-Kotlin-7f52ff) ![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-Material3-blueviolet)
+
+**Aplicación Android para gestionar objetos, enemigos y equipamiento del juego R.E.P.O.**
 
 **Desarrollada por:** Alejandro Mejías Ramírez y Samuel Morán Hernández
 
 ---
 
+## Tabla de Contenido
+
+- [Descripción](#descripción)
+- [Funcionalidades Principales](#funcionalidades-principales)
+- [Tecnologías](#tecnologías)
+- [Requisitos](#requisitos)
+- [Instalación y Ejecución](#instalación-y-ejecución)
+- [Arquitectura](#arquitectura)
+- [Estructura del Proyecto](#estructura-del-proyecto)
+- [Características Destacadas](#características-destacadas)
+- [Decisiones Técnicas](#decisiones-técnicas)
+- [Dependencias Principales](#dependencias-principales)
+- [Autores](#autores)
+- [Licencia](#licencia)
+
+---
+
 ## Descripción
 
-Wiki REPO es una companion app para R.E.P.O. desarrollada con Jetpack Compose que permite gestionar y catalogar objetos recuperados durante las partidas.
+Wiki REPO es una aplicación companion para el juego **R.E.P.O.**, desarrollada con **Jetpack Compose** y **Material 3**. Permite a los jugadores catalogar y gestionar información del juego de forma organizada y persistente.
 
-### Funcionalidades Principales
+### Datos Predeterminados Incluidos
 
-- **Loot Log**: Registrar y gestionar objetos recuperados (valores, rareza, estado)
-- **Bestiario**: Catálogo de enemigos con nivel de peligro y tácticas
-- **Tienda**: Catálogo de items comprables con precios en SURPLUS
-- **Ajustes**: Configuración de tema, ordenación y filtros persistidos
+- **15 objetos** de botín de diferentes ubicaciones
+- **12 tipos** de enemigos con distintos niveles de peligro
+- **20 artículos** de tienda (armas, consumibles y utilidades)
 
 ---
 
-## Requisitos Técnicos
+## Funcionalidades Principales
 
-| Requisito | Versión |
+### Botín
+
+- Registro de objetos por **ubicación** (Genérico, Mágico, Mansión, Ártico, Museo)
+- Sistema de **valoración** y clasificación por **peso**
+- **Notas personalizables** y sistema de **favoritos**
+
+### Bestiario
+
+- Catálogo de enemigos con **niveles de peligro** (1-3)
+- **Código de colores** (Verde / Amarillo / Rojo)
+- **Método de detección** (Visión / Audio)
+- **Notas tácticas** por enemigo
+
+### Tienda
+
+- Catálogo de artículos por **categoría** (Armas, Consumibles, Utilidad)
+- **Precios** y **descripciones** detalladas
+- Sistema de **lista de deseos**
+
+### Configuración
+
+- **Tema:** claro / oscuro / sistema
+- **Ordenamiento** personalizado
+- **Filtro** de favoritos
+- **Persistencia** de preferencias
+
+---
+
+## Tecnologías
+
+### Core
+
+- **Jetpack Compose** - UI declarativa moderna
+- **Material 3** - Sistema de diseño de Google
+- **Kotlin Coroutines + Flow** - Programación reactiva asíncrona
+
+### Persistencia
+
+- **Room Database** - Base de datos local con type-safety
+- **DataStore Preferences** - Almacenamiento de preferencias
+
+### Arquitectura
+
+- **MVVM** - UI / ViewModel / Repository / Data
+- **Service Locator** - Inyección de dependencias
+- **Navigation Compose** - Navegación entre pantallas
+---
+
+## Requisitos
+
+| Componente | Versión |
 |-----------|---------|
-| Android Studio | Hedgehog (2023.1.1)+ |
-| Kotlin | 1.9.22 |
-| Min SDK | 24 (Android 7.0) |
-| Target SDK | 36 |
-
-### Tecnologías
-
-- Jetpack Compose + Material 3
-- Room Database (persistencia local)
-- DataStore Preferences (configuración)
-- Navigation Compose (rutas tipadas)
-- MVVM + Coroutines/Flow
-- Service Locator (inyección de dependencias)
-
+| **Android Studio** | Hedgehog (2023.1.1) o superior |
+| **Kotlin** | 1.9.22 |
+| **Min SDK** | 24 (Android 7.0) |
+| **Target SDK** | 36 |
 
 ---
-
-## Instalación
+## Instalación y Ejecución
 
 ### 1. Clonar el Repositorio
 
-```bash
-git clone https://github.com/Zyroks0906/wiki_repo_amr_smh
-cd wiki-repo-amr-smh
-```
+git clone https://github.com/Zyroks0906/wiki_repo_amr_smh.git
+cd wiki_repo_amr_smh
 
-### 2. Abrir en Android Studio
+### 2. Abrir y Ejecutar en Android Studio
 
-1. Abre Android Studio
-2. File → Open y selecciona la carpeta del proyecto
-3. Espera a que Gradle Sync termine (2-3 minutos)
+1. Abre **Android Studio**
+2. **File → Open** → Selecciona la carpeta del proyecto
+3. Espera a que **Gradle Sync** termine
+4. Conecta un dispositivo o inicia un emulador
+5. Click en **Run** o presiona **Shift + F10**
 
-### 3. Ejecutar
+### 3. Limpiar Datos (si es necesario)
 
-1. Conecta un dispositivo o inicia un emulador
-2. Click en Run (Shift + F10)
-3. La app se instalará automáticamente
+Si ya tenías una versión anterior instalada:
 
-**Alternativa (línea de comandos):**
-
-```bash
-./gradlew installDebug
-adb shell am start -n com.amrsmh.wiki_repo_amr_smh/.MainActivity
-```
+adb uninstall com.amrsmh.wiki_repo_amr_smh
 
 ---
 
 ## Arquitectura
 
-Wiki REPO sigue el patrón **MVVM** con separación clara de capas:
-
+La aplicación sigue el patrón **MVVM** con separación clara de capas:
 ```
 UI Layer (Compose)
-    ↓
+    ↓ collectAsState()
 ViewModel Layer (StateFlow)
-    ↓
+    ↓ suspend functions
 Repository Layer (Flows)
-    ↓
+    ↓ Room queries
 Data Layer (Room + DataStore)
 ```
-
-### Flujo de Datos
-
-1. **UI** llama funciones del ViewModel
-2. **ViewModel** ejecuta operaciones en el Repository
-3. **Repository** accede a Room/DataStore
-4. **Room/DataStore** emiten cambios mediante Flows
-5. **UI** se actualiza automáticamente con `collectAsState()`
 
 ---
 
 ## Estructura del Proyecto
-
 ```
 app/src/main/java/com/amrsmh/wiki_repo_amr_smh/
-├── data/                           # Capa de datos
-│   ├── local/                      # Room Database
-│   │   ├── RoomDb.kt               # Definición BD
-│   │   ├── dao/LootDao.kt          # Operaciones BD
-│   │   └── entities/LootEntity.kt  # Tabla Room
-│   ├── datastore/                  # DataStore
-│   │   └── PreferencesManager.kt   # Preferencias
-│   └── repository/
-│       └── LootRepository.kt       # Lógica de datos
+│
+├── data/
+│   ├── local/           # Room Database (DAOs + Entities)
+│   ├── datastore/       # PreferencesManager
+│   └── repository/      # Repositorios (mapeo Entity ↔ Model)
+│
 ├── domain/
-│   └── models/LootItem.kt          # Modelo de negocio
-├── ui/                             # Capa de presentación
-│   ├── components/                 # Componentes reutilizables
-│   ├── screens/                    # Pantallas
-│   │   ├── loot/
-│   │   ├── bestiary/
-│   │   ├── shop/
-│   │   └── settings/
-│   ├── viewmodel/                  # ViewModels
-│   ├── navigation/                 # Navegación tipada
-│   └── theme/                      # Material 3 Theme
-├── di/ServiceLocator.kt            # Inyección de dependencias
-└── MainActivity.kt                 # Punto de entrada
+│   └── models/          # Modelos de negocio (LootItem, Monster, ShopItem)
+│
+├── ui/
+│   ├── components/      # Componentes reutilizables
+│   ├── screens/         # Pantallas (Main, Loot, Bestiary, Shop, Settings)
+│   ├── viewmodel/       # ViewModels con StateFlow
+│   ├── navigation/      # NavGraphs
+│   └── theme/           # Material 3 Theme
+│
+├── di/
+│   └── ServiceLocator.kt
+│
+└── MainActivity.kt
 ```
 
 ---
 
-## Componentes Principales
+## Características Destacadas
 
-### Room Database
-- Singleton con persistencia local
-- Entity LootEntity con índices en `createdAt` e `isFavorite`
-- DAO con `Flow<List<...>>` para observación reactiva
-- Queries type-safe en tiempo de compilación
+### Datos Iniciales Automáticos
 
-### Repository
-- Mapeo Entity ↔ Domain
-- Expone Flows para la UI
-- Funciones suspend para escrituras
+Al instalar por primera vez se insertan datos de ejemplo mediante callback de Room.
 
-### ViewModel
-- StateFlow para gestionar estado de UI
-- Operaciones en `viewModelScope` (canceladas automáticamente)
-- Integración con Repository
+### Tema Dinámico
 
-### DataStore
-- Persistencia de preferencias sin SharedPreferences
-- Type-safe acceso a datos
-- Reactivo mediante Flows
+Cambios de tema aplicados **inmediatamente** (RepoTheme observa preferencias vía Flow).
 
-### Navegación
-- Routes con `@Serializable`
-- Parámetros tipados (sin Strings mágicos)
-- Type-safe en compile-time
+### Filtrado y Ordenamiento Reactivo
 
+ViewModels combinan Flows (datos + preferencias) para recomponer UI.
 
----
+### Listas Eficientes
 
-## Configuración de Gradle
+`LazyColumn` con `key = { it.id }` para renderizado optimizado.
 
-### Plugins Requeridos
+### Dropdowns Controlados
 
-```kotlin
-plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.22"
-    id("com.google.devtools.ksp") version "1.9.22-1.0.17"
-}
-```
-
-### Dependencias Principales
-
-```kotlin
-dependencies {
-    // Compose + Material 3
-    implementation(platform("androidx.compose:compose-bom:2024.02.00"))
-    implementation("androidx.compose.ui:ui")
-    implementation("androidx.compose.material3:material3")
-    
-    // ViewModel + Lifecycle
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
-    
-    // Navigation Compose + Serialización
-    implementation("androidx.navigation:navigation-compose:2.7.7")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
-    
-    // Room Database
-    implementation("androidx.room:room-runtime:2.6.1")
-    implementation("androidx.room:room-ktx:2.6.1")
-    ksp("androidx.room:room-compiler:2.6.1")
-    
-    // DataStore Preferences
-    implementation("androidx.datastore:datastore-preferences:1.0.0")
-}
-```
-
-**Nota:** Sin hacer `Gradle Sync` después de cambios en `build.gradle.kts`, Android Studio no reconoce las nuevas clases (@Dao, @Entity, @Serializable, etc.)
+`ExposedDropdownMenuBox` para evitar errores de tipeo en datos categóricos.
 
 ---
 
@@ -204,23 +190,53 @@ dependencies {
 
 | Decisión | Razón |
 |----------|-------|
-| **MVVM** | Separación de responsabilidades, testeable, reactivo |
-| **Room** | Type-safe, menos boilerplate, Flows nativos |
-| **DataStore** | Coroutines-first, type-safe, transaccional |
-| **Service Locator** | Simplicidad en proyecto pequeño; escalable a Hilt |
-| **Navegación Tipada** | Seguridad en compile-time, sin Strings mágicos |
-| **Jetpack Compose** | UI moderna, declarativa, menos XML |
+| **MVVM** | Separación de responsabilidades, testeable |
+| **Room** | Type-safety y soporte nativo para Flows |
+| **DataStore** | Reemplazo moderno de SharedPreferences |
+| **StateFlow** | Reactividad y compatibilidad con Compose |
+| **Service Locator** | Simplicidad para proyecto pequeño |
+| **Jetpack Compose** | UI moderna y declarativa |
 
 ---
 
-## Próximas Mejoras
+## Dependencias Principales
 
-- Búsqueda y filtros avanzados en tiempo real
-- Integración de imágenes desde galería
-- Dark mode automático según hora del día
-- Exportar/importar datos a JSON
-- Sincronización con Firebase
-- Gráficas de estadísticas (valor total, items por categoría)
+// Compose + Material 3
+implementation(platform("androidx.compose:compose-bom:2024.02.00"))
+implementation("androidx.compose.material3:material3")
 
+// ViewModel + Lifecycle
+implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
 
+// Navigation + Serialization
+implementation("androidx.navigation:navigation-compose:2.7.7")
+implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 
+// Room Database
+implementation("androidx.room:room-runtime:2.6.1")
+implementation("androidx.room:room-ktx:2.6.1")
+ksp("androidx.room:room-compiler:2.6.1")
+
+// DataStore Preferences
+implementation("androidx.datastore:datastore-preferences:1.0.0")
+
+---
+
+## Autores
+
+**Alejandro Mejías Ramírez** - [@Zyroks0906](https://github.com/Zyroks0906)
+
+**Samuel Morán Hernández** - [@SamuelMoranHdz](https://github.com/SamuelMoranHdz)
+
+---
+
+## Licencia
+
+Proyecto académico desarrollado para la asignatura de **Desarrollo de Aplicaciones Móviles**.
+
+---
+
+**Repositorio:** [https://github.com/Zyroks0906/wiki_repo_amr_smh](https://github.com/Zyroks0906/wiki_repo_amr_smh)
+
+**Versión:** 1.0.0
