@@ -34,7 +34,12 @@ fun LootScreen(
                     IconButton(onClick = navigateBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Atrás")
                     }
-                }
+                },
+
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
             )
         },
         floatingActionButton = {
